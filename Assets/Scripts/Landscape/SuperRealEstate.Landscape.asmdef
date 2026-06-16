@@ -1,0 +1,16 @@
+{
+    "name": "SuperRealEstate.Landscape",
+    "rootNamespace": "SuperRealEstate.Landscape",
+    "references": [
+        "SuperRealEstate.RoomMeasure"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

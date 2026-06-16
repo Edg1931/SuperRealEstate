@@ -197,6 +197,21 @@ see it in AR**.
 - 🔵 **AI auto-redesign**: "show this as a modern open-concept kitchen" →
   generated layout + finishes the user can then refine.
 
+## Pillar 8 — Outdoor & Landscape Intelligence
+
+The yard is half the property and nobody serves it well in AR.
+
+- 🟢 **Plant / tree / flower ID**: walk up and the app names it (common +
+  scientific) with care level, water/sun, mature size, toxicity to kids/pets,
+  invasive flag, pollen/allergy, and replacement cost.
+- 🟢 **"How much do I need?" calculators**: measure a flower bed → **mulch**
+  (cu yd + bags); a patio → **concrete / pavers**; a lawn → **sod / seed**; a
+  run → **fence** (posts + panels). Same AR measurement, bulk-material answers.
+- 🟡 **Hardscape design**: drop a virtual patio / deck / pergola / pool with live
+  cost + takeoff; sun/shade path for the best spots; buildable-envelope checks.
+- See `docs/FEATURES-BACKLOG.md` for the full idea list and `docs/DESIGN-SYSTEM.md`
+  for the spatial UI/eye-tracking design language.
+
 ---
 
 ## Competitive landscape & the gap we exploit

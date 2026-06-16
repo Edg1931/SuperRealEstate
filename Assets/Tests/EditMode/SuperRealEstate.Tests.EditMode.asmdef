@@ -8,6 +8,7 @@
         "SuperRealEstate.Renovation",
         "SuperRealEstate.Insights",
         "SuperRealEstate.Catalog",
+        "SuperRealEstate.Landscape",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

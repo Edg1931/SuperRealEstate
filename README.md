@@ -47,6 +47,8 @@ Assets/Scripts/Staging/        Furniture, vendor catalogs, layouts, blueprint
 Assets/Scripts/Renovation/     Editable building model, edit engine, load-bearing
                                advisor, renovation cost (demo + finishes) (testable)
 Assets/Scripts/Catalog/        Recognized finish → real product matching (testable)
+Assets/Scripts/Landscape/      Plant ID + bulk-material calculators (mulch, etc.) (testable)
+Assets/Scripts/UI/             Spatial design tokens, comfort + eye-tracking model
 Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
 Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
 Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring
