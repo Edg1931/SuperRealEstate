@@ -1,0 +1,19 @@
+{
+    "name": "SuperRealEstate.ARCore",
+    "rootNamespace": "SuperRealEstate.ARCore",
+    "references": [
+        "Unity.XR.ARFoundation",
+        "Unity.XR.CoreUtils",
+        "SuperRealEstate.RoomMeasure",
+        "SuperRealEstate.MaterialCost"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

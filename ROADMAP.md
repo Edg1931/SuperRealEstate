@@ -7,11 +7,13 @@
 - [ ] Supabase project: `materials`/`properties`/`rooms`/`room_measurements` + seed.
 - [ ] `BackendClient` wired to Supabase.
 
-## Phase 1 — Room measurement (single device first)
-- [ ] AR Foundation session bootstrap + plane/mesh managers (`ARCore` assembly).
-- [ ] Floor/wall plane → `RoomGeometry`; tap/gaze confirm where ambiguous.
+## Phase 1 — Room measurement (Vision Pro first)
+- [x] `FloorOutlineBuilder`: AR plane boundary → world-space outline → `RoomGeometry` (+ tests).
+- [x] `RoomMeasureController` (`ARCore` assembly): picks floor/ceiling planes, captures + measures.
+- [x] visionOS/PolySpatial setup guide (`docs/VisionOS-Setup.md`).
+- [ ] Editor: AR scene wiring (XR Origin, AR Session, Plane Manager, volume camera). *(local)*
 - [ ] Spatial UI panel showing live floor area, perimeter, wall area, height, volume.
-- [ ] Build to first headset (Galaxy XR if no Mac; otherwise Vision Pro).
+- [ ] Build to Vision Pro and verify vs. tape measure. *(local, needs Mac + headset)*
 
 ## Phase 2 — Material cost estimate
 - [ ] `MaterialCatalog` synced from Supabase; per-surface material selection.
