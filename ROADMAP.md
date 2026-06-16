@@ -88,13 +88,15 @@
 ## Phase 10 — Outdoor & Landscape (Pillar 8)
 - [x] `BulkMaterialCalculator` (mulch/concrete/sod/seed/pavers/fence) — tested.
 - [x] `PlantIdentification` + `IPlantIdentifier` contract.
-- [ ] `plant-id` Edge Function (Pl@ntNet/Plant.id); plant card UI.
-- [ ] Outdoor area measurement + hardscape placement; sun/shade path.
+- [x] `plant-id` Edge Function + `EdgeFunctionPlantIdentifier` client (Claude
+      multimodal; Pl@ntNet/Plant.id upgrade path).
+- [ ] Plant card UI; outdoor area measurement + hardscape placement; sun/shade path.
 
 ## Phase 11 — Spatial design system & UI (cross-cutting)
 - [x] Design language + eye-tracking interaction spec (`docs/DESIGN-SYSTEM.md`).
-- [x] `UI` tokens: `DesignTokens`, `SpatialComfort`, `Interaction` (gaze+pinch model).
-- [ ] Build the component set (insight card, measurement HUD, radial menu, finish
+- [x] `UI` tokens: `DesignTokens`, `SpatialComfort` (+ angular sizing),
+      `Interaction` (gaze+pinch, no-Midas-touch), `SpatialPanel`, `RadialToolMenu`. Tested.
+- [ ] Build the component visuals (insight card, measurement HUD, radial menu, finish
       chip, budget HUD, plant card) per device. *(in-editor)*
 
 ## Verification

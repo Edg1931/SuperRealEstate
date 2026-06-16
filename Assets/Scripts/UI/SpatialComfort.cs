@@ -39,5 +39,20 @@ namespace SuperRealEstate.UI
 
         /// <summary>Clamp a desired panel depth into the comfortable range.</summary>
         public static float ClampDepth(float meters) => Mathf.Clamp(meters, DepthMinM, DepthMaxM);
+
+        /// <summary>Physical size (m) that subtends <paramref name="angularDeg"/> at a depth.</summary>
+        public static float AngularToMeters(float angularDeg, float depthM)
+            => 2f * depthM * Mathf.Tan(angularDeg * 0.5f * Mathf.Deg2Rad);
+
+        /// <summary>Angular size (deg) a physical size subtends at a depth.</summary>
+        public static float MetersToAngular(float sizeM, float depthM)
+        {
+            if (depthM <= 0f) return 0f;
+            return 2f * Mathf.Atan(sizeM / (2f * depthM)) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>Is a physical target comfortably gaze-selectable at this depth?</summary>
+        public static bool IsComfortableTargetAt(float sizeM, float depthM)
+            => MetersToAngular(sizeM, depthM) >= MinTargetAngularDeg;
     }
 }

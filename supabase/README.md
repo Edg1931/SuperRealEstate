@@ -46,7 +46,10 @@ keys stay server-side:
   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
   supabase functions deploy scene-insights
   ```
-- `plant-id` → Pl@ntNet (later)
+- **`plant-id`** (implemented, `functions/plant-id/`) → identifies vegetation
+  from a frame, returns `PlantIdentification[]`. Same deploy/secret as above
+  (`supabase functions deploy plant-id`). Upgrade path: front with Pl@ntNet/
+  Plant.id for species accuracy, enrich with Claude.
 - `comps` → RentCast (later)
 - `parcels` → Regrid (later)
 

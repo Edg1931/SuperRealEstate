@@ -9,6 +9,7 @@
         "SuperRealEstate.Insights",
         "SuperRealEstate.Catalog",
         "SuperRealEstate.Landscape",
+        "SuperRealEstate.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
