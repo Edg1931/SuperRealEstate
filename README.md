@@ -39,15 +39,21 @@ ecosystems:
 ## Repo layout
 
 ```
-Assets/Scripts/RoomMeasure/   Geometry capture + measurement math (testable)
-Assets/Scripts/MaterialCost/  Material catalog + cost estimation (testable)
-Assets/Scripts/ARCore/        AR Foundation session/plane/mesh wiring
-Assets/Scripts/Services/      Supabase + third-party API clients
-Assets/Scripts/UI/            Spatial panels + phone screens
-Assets/Tests/EditMode/        Headless unit tests for the core logic
-Packages/manifest.json        Unity package dependencies
-supabase/                     Database migrations + seed data
+Assets/Scripts/RoomMeasure/    Geometry capture + measurement math (testable)
+Assets/Scripts/MaterialCost/   Material catalog + cost estimation (testable)
+Assets/Scripts/Staging/        Furniture, layouts + "will it fit?" math (testable)
+Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
+Assets/Scripts/Insights/       AI scene-analysis contracts (SceneInsight, ISceneAnalyzer)
+Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring
+Assets/Scripts/Services/       Supabase + third-party API clients
+Assets/Scripts/UI/             Spatial panels + phone screens
+Assets/Tests/EditMode/         Headless unit tests for the core logic
+Packages/manifest.json         Unity package dependencies
+supabase/                      Database migrations + seed data
+docs/                          Setup guides (e.g. VisionOS-Setup.md)
 ```
+
+See [`VISION.md`](./VISION.md) for the full product vision and feature pillars.
 
 ## Testing
 

@@ -26,11 +26,30 @@
 ## Phase 4 — Property data overlay
 - [ ] Comps via RentCast; parcel/property lines via Regrid anchored to location.
 
-## Phase 5 — Virtual staging
-- [ ] Place 3D furniture on detected floor; later import user's own furniture.
+## Phase 5 — Virtual staging (Pillar 3)
+- [x] Staging data model (`furniture_assets`, `staging_layouts`, `staging_placements`) + RLS.
+- [x] Staging domain (`FurnitureAsset`, `Placement`, `StagingLayout`) + `FitChecker` (+ tests).
+- [ ] Phone furniture scanning (Object Capture/photogrammetry) → glTF/USDZ in storage.
+- [ ] Place/arrange furniture on detected floor; surface fit + clearance warnings in UI.
+- [ ] AI auto-staging / declutter (vision model via Edge Function).
 
-## Phase 6 — Phone companion
-- [ ] Build same project to iOS/Android; phone screens for saved rooms/estimates + AR staging.
+## Phase 6 — Shared multi-device sessions (Pillar 4)
+- [x] Session data model (`sessions`, `session_participants`) + RLS + participant helper.
+- [x] Collaboration contracts: `ISharedSessionService`, `ISpatialAnchorService`, presence model.
+- [ ] Spatial-anchor co-location (ARKit shared / ARCore persistent anchors) across devices.
+- [ ] Realtime sync of placements + presence (Supabase Realtime); avatars/pointers.
+
+## Phase 7 — AI scene insights (Pillars 1 & 6)
+- [x] Insight contracts: `SceneInsight`, `SceneAnalysisRequest`, `ISceneAnalyzer`.
+- [ ] Edge Function calling a multimodal model (Claude) for scene understanding.
+- [ ] Insight cards UI; advisory disclaimers; buyer-preference matching.
+
+## Phase 8 — Property data overlays (Pillar 2)
+- [ ] Comps (RentCast), parcel/property lines (Regrid), risk/light layers — anchored in space.
+
+## Phase 9 — Phone/tablet companion + deliverables (Pillars 5)
+- [ ] Build same project to iOS/Android; companion screens for saved rooms/estimates/staging.
+- [ ] Auto-generated walkthrough recap (floor plan, measurements, staged shots, costs, comps).
 
 ## Verification
 
