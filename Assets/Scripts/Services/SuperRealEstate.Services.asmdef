@@ -1,0 +1,17 @@
+{
+    "name": "SuperRealEstate.Services",
+    "rootNamespace": "SuperRealEstate.Services",
+    "references": [
+        "SuperRealEstate.RoomMeasure",
+        "SuperRealEstate.MaterialCost"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
