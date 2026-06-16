@@ -4,6 +4,7 @@
     "references": [
         "SuperRealEstate.RoomMeasure",
         "SuperRealEstate.MaterialCost",
+        "SuperRealEstate.Staging",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
