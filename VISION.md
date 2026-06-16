@@ -78,6 +78,12 @@ Look around and see the invisible.
 - 🟡 **Scan your own furniture** (phone): photogrammetry / Object Capture / LiDAR /
   Gaussian splat → a personal 3D furniture library tied to the account
   (USDZ + glTF). "Will *my* couch work here?"
+- 🟡 **Vendor catalog import**: pull from *vendors' inventories* — furniture,
+  fixtures, appliances, cabinetry, lighting — as ready-made 3D assets to drop
+  into a space. A staging marketplace, not just your own scans. Especially
+  powerful for **new construction**: a buyer furnishes and selects finishes from
+  partner vendors *before* move-in, and "add to cart" flows straight into a real
+  order. (Each vendor is an importable catalog; assets carry SKU + price.)
 - 🟢 **"Will it fit?" checker** *(testable math, building now)*: real item
   dimensions vs. room bounds, doorway pass-through, and clearance/walkway margins.
 - 🟡 **Place & arrange** in empty or occupied rooms; snap-to-wall, collision hints.
@@ -87,6 +93,28 @@ Look around and see the invisible.
   clutter to reveal a clean slate (great for occupied listings).
 - 🔵 **Style transfer**: "show this kitchen with white shaker cabinets and a
   waterfall island" — visualized in place with a rough cost.
+
+## Pillar 3b — Blueprint-to-Space (design on PC, place on site)
+
+*(Inspired by Microsoft Layout on HoloLens — a flagship workflow for new builds.)*
+
+Author a staged layout from a **floor plan / blueprint on a desktop** (calm,
+precise, top-down), then **register it to the real world** and walk through it at
+1:1 scale in a headset. The PC is the design surface; the headset is the viewer.
+
+- 🟡 **Desktop blueprint authoring**: import a floor plan, set its real-world
+  scale, and place vendor/own furniture in plan view at a PC — no headset needed
+  to design.
+- 🟡 **On-site registration**: align the blueprint to the real space, then every
+  placement snaps into the room at true scale for everyone in the session.
+- 🔵 **New-construction pre-visualization**: stand on a bare slab or in a framed
+  shell — where there are *no walls to detect* — and see the finished, furnished
+  space anchored to the site. Two-point ground alignment (pick two known
+  points / stakes that match two blueprint points) solves position, rotation,
+  and scale without relying on wall detection.
+- 🟡 **Round-trips with Pillar 4**: the registered blueprint rides the shared
+  spatial anchor, so the PC-authored design appears in the same spot for the
+  agent's headset, the buyer's phone, and a remote participant alike.
 
 ## Pillar 4 — Shared Spatial Sessions (everyone sees the same thing)
 
@@ -143,11 +171,13 @@ preferences* and feeds the agent insight to relay.
 | **CubiCasa / magicplan / Hover** | Floor plans & exterior measurement | Measurement only; not real-time, in-headset, or insight-rich |
 | **Virtual staging services** | Photorealistic staged *photos* | Offline, 2D, days of turnaround; not live, spatial, or interactive |
 | **Spatial / Arkio / Mesh** | Multi-user collaborative AR/VR | Generic collaboration; no real-estate data, costing, or property intelligence |
+| **Microsoft Layout (HoloLens, retired)** | PC blueprint authoring → 1:1 placement in real space | Enterprise/HoloLens-only & discontinued; no real-estate domain, vendor catalogs, costing, or buyer-facing flows |
 
 **Our wedge:** the only platform that fuses (1) live spatial measurement +
-costing, (2) AI scene insight, (3) bring-your-own-furniture staging, and (4)
-**cross-device shared sessions** into one realtor-buyer experience. Nobody owns
-the intersection.
+costing, (2) AI scene insight, (3) bring-your-own-furniture **and vendor-catalog**
+staging, (4) **blueprint-to-space** authoring (PC → on-site, great for new
+builds), and (5) **cross-device shared sessions** into one realtor-buyer
+experience. Nobody owns the intersection.
 
 ---
 

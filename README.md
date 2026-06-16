@@ -16,6 +16,7 @@ ecosystems:
 | **visionOS** | PolySpatial (ARKit) | Apple Vision Pro | Primary |
 | **Android XR** | OpenXR provider | Samsung Galaxy XR | Primary |
 | **iOS / Android phone** | ARKit / ARCore | Companion app | Later phase |
+| **Desktop (Win/Mac)** | Standalone | Blueprint authoring (design on PC → place on site) | Later phase |
 
 > The INMO Air 3 (and similar HUD-only glasses) are **not** targets: they lack
 > depth/world-tracking and cannot do room measurement or world-anchored AR.
@@ -41,7 +42,8 @@ ecosystems:
 ```
 Assets/Scripts/RoomMeasure/    Geometry capture + measurement math (testable)
 Assets/Scripts/MaterialCost/   Material catalog + cost estimation (testable)
-Assets/Scripts/Staging/        Furniture, layouts + "will it fit?" math (testable)
+Assets/Scripts/Staging/        Furniture, vendor catalogs, layouts, blueprint
+                               registration + "will it fit?" math (testable)
 Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
 Assets/Scripts/Insights/       AI scene-analysis contracts (SceneInsight, ISceneAnalyzer)
 Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring

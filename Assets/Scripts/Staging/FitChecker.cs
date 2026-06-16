@@ -51,11 +51,17 @@ namespace SuperRealEstate.Staging
         /// </summary>
         public static Vector3[] FootprintCorners(Placement placement, FurnitureAsset asset)
         {
-            if (placement == null) throw new ArgumentNullException(nameof(placement));
             if (asset == null) throw new ArgumentNullException(nameof(asset));
+            return FootprintCorners(placement, asset.Size);
+        }
 
-            float hw = Mathf.Abs(asset.Size.x) * placement.Scale * 0.5f;
-            float hd = Mathf.Abs(asset.Size.z) * placement.Scale * 0.5f;
+        /// <summary>Footprint corners for any item given its real-world size (x=width, z=depth).</summary>
+        public static Vector3[] FootprintCorners(Placement placement, Vector3 itemSize)
+        {
+            if (placement == null) throw new ArgumentNullException(nameof(placement));
+
+            float hw = Mathf.Abs(itemSize.x) * placement.Scale * 0.5f;
+            float hd = Mathf.Abs(itemSize.z) * placement.Scale * 0.5f;
 
             Quaternion rot = Quaternion.Euler(0f, placement.YawDegrees, 0f);
             Vector3 p = placement.Position;
@@ -79,10 +85,21 @@ namespace SuperRealEstate.Staging
             FurnitureAsset asset,
             float wallClearanceM = 0f)
         {
+            if (asset == null) throw new ArgumentNullException(nameof(asset));
+            return FootprintFitsInRoom(roomOutline, placement, asset.Size, wallClearanceM);
+        }
+
+        /// <summary>Room-fit check for any item given its real-world size.</summary>
+        public static FitResult FootprintFitsInRoom(
+            IReadOnlyList<Vector3> roomOutline,
+            Placement placement,
+            Vector3 itemSize,
+            float wallClearanceM = 0f)
+        {
             if (roomOutline == null || roomOutline.Count < 3)
                 return new FitResult(false, false, 0f, "Room outline is invalid.");
 
-            Vector3[] corners = FootprintCorners(placement, asset);
+            Vector3[] corners = FootprintCorners(placement, itemSize);
 
             bool allInside = true;
             float minGap = float.MaxValue;

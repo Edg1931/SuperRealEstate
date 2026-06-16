@@ -29,9 +29,18 @@
 ## Phase 5 — Virtual staging (Pillar 3)
 - [x] Staging data model (`furniture_assets`, `staging_layouts`, `staging_placements`) + RLS.
 - [x] Staging domain (`FurnitureAsset`, `Placement`, `StagingLayout`) + `FitChecker` (+ tests).
+- [x] Vendor catalogs: `vendors`/`vendor_catalog_items` schema, `Vendor`/`CatalogItem`,
+      catalog-sourced placements, backend catalog fetch contract.
 - [ ] Phone furniture scanning (Object Capture/photogrammetry) → glTF/USDZ in storage.
+- [ ] Vendor catalog UI (browse → import → place); price/cart roll-up.
 - [ ] Place/arrange furniture on detected floor; surface fit + clearance warnings in UI.
 - [ ] AI auto-staging / declutter (vision model via Edge Function).
+
+## Phase 5b — Blueprint-to-Space (Pillar 3b, new construction)
+- [x] `blueprints` schema; `Blueprint`/`BlueprintPlacement` models.
+- [x] `BlueprintTransform`: two-point on-site registration math, plan→world (+ tests).
+- [ ] Desktop authoring surface (Unity standalone/web): import plan, place from catalog. *(local)*
+- [ ] On-site two-point alignment UI; render registered layout via the shared anchor.
 
 ## Phase 6 — Shared multi-device sessions (Pillar 4)
 - [x] Session data model (`sessions`, `session_participants`) + RLS + participant helper.

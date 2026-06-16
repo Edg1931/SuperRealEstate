@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SuperRealEstate.MaterialCost;
+using SuperRealEstate.Staging;
 
 namespace SuperRealEstate.Services
 {
@@ -47,6 +48,12 @@ namespace SuperRealEstate.Services
     public interface IBackendClient
     {
         Task<IReadOnlyList<Material>> GetMaterialCatalogAsync(CancellationToken ct = default);
+
+        /// <summary>Browse the shared vendor marketplace.</summary>
+        Task<IReadOnlyList<Vendor>> GetVendorsAsync(CancellationToken ct = default);
+
+        /// <summary>Fetch a vendor's importable catalog items (3D assets + price).</summary>
+        Task<IReadOnlyList<CatalogItem>> GetVendorCatalogAsync(string vendorId, CancellationToken ct = default);
 
         Task<string> SaveRoomAsync(RoomRecord room, CancellationToken ct = default);
 

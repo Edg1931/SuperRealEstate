@@ -3,7 +3,8 @@
     "rootNamespace": "SuperRealEstate.Services",
     "references": [
         "SuperRealEstate.RoomMeasure",
-        "SuperRealEstate.MaterialCost"
+        "SuperRealEstate.MaterialCost",
+        "SuperRealEstate.Staging"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
