@@ -44,8 +44,9 @@ Assets/Scripts/RoomMeasure/    Geometry capture + measurement math (testable)
 Assets/Scripts/MaterialCost/   Material catalog + cost estimation (testable)
 Assets/Scripts/Staging/        Furniture, vendor catalogs, layouts, blueprint
                                registration + "will it fit?" math (testable)
-Assets/Scripts/Renovation/     Editable building model, load-bearing advisor,
-                               renovation cost (demo + finishes) (testable)
+Assets/Scripts/Renovation/     Editable building model, edit engine, load-bearing
+                               advisor, renovation cost (demo + finishes) (testable)
+Assets/Scripts/Catalog/        Recognized finish → real product matching (testable)
 Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
 Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
 Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring

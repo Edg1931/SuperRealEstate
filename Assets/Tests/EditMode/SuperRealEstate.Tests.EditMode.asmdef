@@ -6,6 +6,8 @@
         "SuperRealEstate.MaterialCost",
         "SuperRealEstate.Staging",
         "SuperRealEstate.Renovation",
+        "SuperRealEstate.Insights",
+        "SuperRealEstate.Catalog",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

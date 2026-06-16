@@ -8,6 +8,7 @@ namespace SuperRealEstate.MaterialCost
         PerSquareFoot,
         PerSquareMeter,
         PerLinearFoot,
+        PerGallon,   // paint (priced by the gallon; quantity via FinishQuantity)
         Each
     }
 
@@ -33,6 +34,14 @@ namespace SuperRealEstate.MaterialCost
         public string Category;
         public MaterialUnit Unit;
         public float PricePerUnit;
+
+        // Finish-catalog fields (let AI-recognized finishes resolve to a real
+        // product with a buy link). E.g. brand "Sherwin-Williams",
+        // ProductCode "SW 7029", ColorHex "#D1CBC1".
+        public string Brand;
+        public string ProductCode;
+        public string ColorHex;
+        public string BuyUrl;
 
         public Material() { }
 

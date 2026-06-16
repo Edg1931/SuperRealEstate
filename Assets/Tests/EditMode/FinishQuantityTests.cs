@@ -48,5 +48,13 @@ namespace SuperRealEstate.Tests
             // 10 m² = 107.64 ft² × $3, no waste = 322.9.
             Assert.AreEqual(322.92f, FinishQuantity.FinishCost(10f, lvp, wasteFactor: 0f), 0.1f);
         }
+
+        [Test]
+        public void FinishCost_PerGallon_PricesByCoverage()
+        {
+            // A Sherwin-Williams color priced per gallon: 30 m² → 2 gallons × $45 = $90.
+            var paint = new Material("sw7029", "Agreeable Gray", "Paint", MaterialUnit.PerGallon, 45f);
+            Assert.AreEqual(90f, FinishQuantity.FinishCost(30f, paint), 0.01f);
+        }
     }
 }

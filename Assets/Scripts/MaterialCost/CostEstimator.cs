@@ -54,6 +54,8 @@ namespace SuperRealEstate.MaterialCost
                     return AreaSqM(surface, m);
                 case MaterialUnit.PerLinearFoot:
                     return m.PerimeterFt; // trim / baseboard
+                case MaterialUnit.PerGallon:
+                    return FinishQuantity.PaintGallons(AreaSqM(surface, m)); // coverage-based
                 case MaterialUnit.Each:
                     return 1f;
                 default:

@@ -54,7 +54,8 @@
 - [x] Surface finish recognition: `SurfaceFinding`/`SceneAnalysis`, brand/product/color
       + unit cost (e.g. Sherwin-Williams paint by the gallon), parsed by the analyzer.
 - [ ] Frame capture from headset/phone camera wired into the analyzer. *(in-editor)*
-- [ ] Map recognized finish → catalog product (cost + re-finish + "shop this look").
+- [x] Map recognized finish → catalog product: `FinishMatcher`/`IFinishCatalog`,
+      finish catalog fields (brand/product/color/buy_url) + per_gallon paint cost.
 - [ ] Insight cards UI; advisory disclaimers; buyer-preference matching.
 
 ## Phase 7b — Renovation visualization (Pillar 7)
@@ -65,8 +66,12 @@
       (paint-by-gallon, flooring-by-box) — all tested.
 - [x] `Surface` primitive unifying measure → recognize → re-finish → stage.
 - [x] Import contracts `IBuildingModelImporter` (RoomPlan/CubiCasa/Polycam/Matterport).
+- [x] `RenovationEngine`: apply edits → renovated model (non-destructive,
+      before/after), + `EstimatePlanCost` (demo + finishes). Tested.
 - [ ] Concrete importers (RoomPlan USDZ / CubiCasa DXF parsing). *(local)*
-- [ ] AR re-finish (recolor/retexture) + before/after toggle; desktop 3D editing.
+- [ ] Desktop authoring scene (Unity Standalone) driving the engine — see
+      `docs/Desktop-Authoring.md`. *(in-editor)*
+- [ ] AR re-finish (recolor/retexture) + before/after toggle. *(in-editor)*
 - [ ] ZIP-localized cost factors + "get real bids" handoff.
 
 ## Phase 8 — Property data overlays (Pillar 2)

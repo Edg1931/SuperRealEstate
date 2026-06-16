@@ -40,6 +40,12 @@ namespace SuperRealEstate.MaterialCost
         public static float FinishCost(float areaSqM, Material material, float wasteFactor = 0.10f)
         {
             if (material == null) throw new ArgumentNullException(nameof(material));
+
+            // Paint is bought by the gallon — coverage handles "waste", so price
+            // by gallons, not area.
+            if (material.Unit == MaterialUnit.PerGallon)
+                return PaintCost(areaSqM, material.PricePerUnit);
+
             float waste = 1f + Mathf.Max(0f, wasteFactor);
             float qty = material.Unit switch
             {
