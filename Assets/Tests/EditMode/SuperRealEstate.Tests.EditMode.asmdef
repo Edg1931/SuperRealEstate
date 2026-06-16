@@ -5,6 +5,7 @@
         "SuperRealEstate.RoomMeasure",
         "SuperRealEstate.MaterialCost",
         "SuperRealEstate.Staging",
+        "SuperRealEstate.Renovation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

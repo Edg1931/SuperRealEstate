@@ -24,7 +24,7 @@ const SEVERITIES = ["Info", "Suggestion", "Caution"] as const;
 
 // JSON schema for structured output. Note: structured outputs do not support
 // numeric min/max or string length constraints — keep the schema to types/enums.
-const INSIGHTS_SCHEMA = {
+const ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
@@ -49,8 +49,35 @@ const INSIGHTS_SCHEMA = {
         ],
       },
     },
+    // Per-surface recognized CURRENT finishes (paint brand/color, flooring,
+    // counters...) so the app can show "what's here + what it costs" and seed a
+    // one-tap re-finish. Brand/price are best-effort and advisory.
+    surfaces: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          surfaceKind: { type: "string" },
+          materialType: { type: "string" },
+          brand: { type: "string" },
+          product: { type: "string" },
+          colorHex: { type: "string" },
+          estimatedUnitCost: { type: "number" },
+          unit: { type: "string" },
+          confidence: { type: "number" },
+          isAdvisory: { type: "boolean" },
+          disclaimer: { type: "string" },
+          note: { type: "string" },
+        },
+        required: [
+          "surfaceKind", "materialType", "brand", "product", "colorHex",
+          "estimatedUnitCost", "unit", "confidence", "isAdvisory", "disclaimer", "note",
+        ],
+      },
+    },
   },
-  required: ["insights"],
+  required: ["insights", "surfaces"],
 } as const;
 
 const SYSTEM_PROMPT = `You are the analysis engine for an AR toolkit used by real estate agents during in-person home showings. You receive a photo of part of a home (or its grounds) plus optional context, and you return concise, accurate insights the agent can relay to a buyer.
@@ -63,7 +90,16 @@ Guidelines:
 - Do NOT make fair-housing-sensitive characterizations of neighborhoods, demographics, or "safety". Stick to the physical property and neutral public data.
 - confidence is 0.0-1.0 reflecting how sure you are.
 - If buyer preferences are provided, surface matching features as Preference insights.
-- Prefer 3-6 high-value insights over an exhaustive list.`;
+- Prefer 3-6 high-value insights over an exhaustive list.
+
+Also populate "surfaces": for each clearly visible finished surface (walls, floor,
+ceiling, cabinets, countertops), identify the material and, when reasonably
+confident, the brand/product/color (e.g. paint "Sherwin-Williams Agreeable Gray
+SW 7029") and an estimated unit cost with its unit (paint -> per_gallon, flooring
+-> per_sqft). Brand/product guesses are ADVISORY (isAdvisory=true) with a short
+disclaimer to confirm before purchase; set confidence honestly and leave brand/
+product empty if you can't tell. This drives "what's here + what it costs" and
+one-tap re-finishing.`;
 
 function corsHeaders(): HeadersInit {
   return {
@@ -141,11 +177,11 @@ Deno.serve(async (req: Request) => {
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content }],
-      output_config: { format: { type: "json_schema", schema: INSIGHTS_SCHEMA } },
+      output_config: { format: { type: "json_schema", schema: ANALYSIS_SCHEMA } },
     });
 
     const text = response.content.find((b) => b.type === "text");
-    const json = text && text.type === "text" ? text.text : '{"insights":[]}';
+    const json = text && text.type === "text" ? text.text : '{"insights":[],"surfaces":[]}';
 
     return new Response(json, {
       status: 200,

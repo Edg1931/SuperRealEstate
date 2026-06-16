@@ -48,12 +48,26 @@
 - [ ] Spatial-anchor co-location (ARKit shared / ARCore persistent anchors) across devices.
 - [ ] Realtime sync of placements + presence (Supabase Realtime); avatars/pointers.
 
-## Phase 7 — AI scene insights (Pillars 1 & 6)
+## Phase 7 — AI scene insights + surface finishes (Pillars 1 & 6)
 - [x] Insight contracts: `SceneInsight`, `SceneAnalysisRequest`, `ISceneAnalyzer`.
-- [x] Edge Function `scene-insights`: Claude multimodal → structured `SceneInsight[]`.
-- [x] C# `EdgeFunctionSceneAnalyzer`: posts captured frame → parses `SceneInsight[]`.
+- [x] Edge Function `scene-insights`: Claude multimodal → `SceneInsight[]` + `surfaces[]`.
+- [x] Surface finish recognition: `SurfaceFinding`/`SceneAnalysis`, brand/product/color
+      + unit cost (e.g. Sherwin-Williams paint by the gallon), parsed by the analyzer.
 - [ ] Frame capture from headset/phone camera wired into the analyzer. *(in-editor)*
+- [ ] Map recognized finish → catalog product (cost + re-finish + "shop this look").
 - [ ] Insight cards UI; advisory disclaimers; buyer-preference matching.
+
+## Phase 7b — Renovation visualization (Pillar 7)
+- [x] Editable model: `BuildingModel` (`Wall`/`Opening`/`RoomDef`) + metrics.
+- [x] `RenovationPlan`/`RenovationEdit` non-destructive edit list; `building_models`/
+      `renovation_plans` schema.
+- [x] `LoadBearingAdvisor` (advisory) + `RenovationCostEstimator` + `FinishQuantity`
+      (paint-by-gallon, flooring-by-box) — all tested.
+- [x] `Surface` primitive unifying measure → recognize → re-finish → stage.
+- [x] Import contracts `IBuildingModelImporter` (RoomPlan/CubiCasa/Polycam/Matterport).
+- [ ] Concrete importers (RoomPlan USDZ / CubiCasa DXF parsing). *(local)*
+- [ ] AR re-finish (recolor/retexture) + before/after toggle; desktop 3D editing.
+- [ ] ZIP-localized cost factors + "get real bids" handoff.
 
 ## Phase 8 — Property data overlays (Pillar 2)
 - [ ] Comps (RentCast), parcel/property lines (Regrid), risk/light layers — anchored in space.

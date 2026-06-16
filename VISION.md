@@ -44,6 +44,11 @@ whispers insight the agent can relay naturally.
 - 🟡 **Appliance & finish recognition** ⚠️: AI identifies appliances, cabinetry,
   countertop material, flooring, fixtures; estimates era/tier ("stainless,
   ~2015; granite counters; builder-grade cabinets"). Feeds talking points.
+- 🟡 **Per-surface finish ID → cost → "shop this look"**: look at a wall and the
+  AI names the finish (e.g. *Sherwin-Williams Agreeable Gray SW 7029*) with a
+  cost (paint by the gallon); look at the floor and it names the flooring with a
+  $/sq ft. One tap re-finishes it virtually or links to buy the real product.
+  See `docs/PIPELINE.md`. *(Brand/price are advisory — confirm before purchase.)*
 - 🔵 **Condition & defect spotting** ⚠️: flag water stains, cracks, mold-likely
   areas, uneven floors, dated electrical (knob-and-tube cues), roof/gutter wear.
   Framed strictly as *"worth asking the inspector about,"* never a verdict.
@@ -159,6 +164,36 @@ preferences* and feeds the agent insight to relay.
 - 🟡 **Preference matching**: tuned to the buyer's wishlist (home office, big
   yard, natural light) → highlights matching features as they walk.
 
+## Pillar 7 — Renovation Visualization (capture → edit → walk it in AR)
+
+*(Take a Matterport/CubiCasa/RoomPlan capture, remodel it with 3D tools, and
+walk the result at 1:1 in glasses. The blueprint workflow's bigger sibling.)*
+
+The loop: **capture or import → editable building model → renovate → cost it →
+see it in AR**.
+
+- 🟡 **Import a captured model**: ingest a Matterport twin, a CubiCasa floor
+  plan, or an Apple RoomPlan scan into an **editable building model** — walls,
+  doors/windows, and rooms as first-class objects (not just a frozen mesh).
+- 🟡 **Structural edits**: remove / move / add walls, open up a kitchen, raise a
+  ceiling, add an opening — modeled as a **non-destructive edit list** so
+  before/after toggles cleanly and edits sync across a shared session.
+- ⚠️ 🟡 **Load-bearing advisory**: flag walls that are *likely* structural
+  (exterior, long spans, perpendicular to joists) before someone imagines
+  removing them — always framed as "confirm with a structural engineer," never a
+  determination.
+- 🟢 **Finishes & live cost**: repaint, swap flooring, change cabinets/counters
+  from the **vendor catalog**, and watch the **renovation cost** update as you
+  design (reuses the measurement + `CostEstimator` core; demolition + materials
+  + a labor estimate). Pair with comps for **renovation ROI**.
+- 🟡 **Before/after in AR**: stand in the real room and toggle existing ↔
+  renovated; "ghost" a removed wall so a buyer *sees* the open concept.
+- 🟡 **Desktop 3D editing → on-site viewing**: heavy editing at a PC (precise
+  modeling tools), then register and walk it on glasses — same PC→site bridge as
+  the blueprint workflow.
+- 🔵 **AI auto-redesign**: "show this as a modern open-concept kitchen" →
+  generated layout + finishes the user can then refine.
+
 ---
 
 ## Competitive landscape & the gap we exploit
@@ -172,12 +207,18 @@ preferences* and feeds the agent insight to relay.
 | **Virtual staging services** | Photorealistic staged *photos* | Offline, 2D, days of turnaround; not live, spatial, or interactive |
 | **Spatial / Arkio / Mesh** | Multi-user collaborative AR/VR | Generic collaboration; no real-estate data, costing, or property intelligence |
 | **Microsoft Layout (HoloLens, retired)** | PC blueprint authoring → 1:1 placement in real space | Enterprise/HoloLens-only & discontinued; no real-estate domain, vendor catalogs, costing, or buyer-facing flows |
+| **CubiCasa / RoomPlan** | Fast capture → semantic floor plan / walls | Capture only; no renovation editing, costing, or AR walkthrough of an *edited* result |
+| **Planner 5D / Cedreo / SketchUp / Chief Architect** | Powerful 3D home design & renders from plans | Desktop renders, not AR-on-site; steep or pro-only; not tied to live cost/comps or a buyer in the room |
+| **Spacely / REimagineHome / IKEA Kreativ** | AI redesign of a room from a photo | 2D image output; not a walkable, edited 3D model; no structural edits or 1:1 AR |
+| **Enscape / Twinmotion / D5** | Real-time photoreal arch-viz | Needs a CAD/BIM model + a pro operator; not capture-to-AR for an agent in the field |
 
 **Our wedge:** the only platform that fuses (1) live spatial measurement +
 costing, (2) AI scene insight, (3) bring-your-own-furniture **and vendor-catalog**
 staging, (4) **blueprint-to-space** authoring (PC → on-site, great for new
-builds), and (5) **cross-device shared sessions** into one realtor-buyer
-experience. Nobody owns the intersection.
+builds), (5) **capture → edit → renovation visualization** walkable in AR with
+live cost, and (6) **cross-device shared sessions** into one realtor-buyer
+experience. Nobody owns the intersection — capture tools stop at the model,
+design tools stop at a desktop render, AI tools stop at a 2D image.
 
 ---
 
