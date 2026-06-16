@@ -41,7 +41,8 @@
 
 ## Phase 7 — AI scene insights (Pillars 1 & 6)
 - [x] Insight contracts: `SceneInsight`, `SceneAnalysisRequest`, `ISceneAnalyzer`.
-- [ ] Edge Function calling a multimodal model (Claude) for scene understanding.
+- [x] Edge Function `scene-insights`: Claude multimodal → structured `SceneInsight[]`.
+- [ ] C# `ISceneAnalyzer` impl calling the Edge Function (capture frame → POST).
 - [ ] Insight cards UI; advisory disclaimers; buyer-preference matching.
 
 ## Phase 8 — Property data overlays (Pillar 2)

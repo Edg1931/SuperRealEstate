@@ -34,13 +34,21 @@ supabase db reset               # applies migrations, then seed.sql automaticall
 > This repo intentionally does **not** auto-create a cloud Supabase project.
 > Create/link your own (free tier is fine), then apply the migration above.
 
-## Edge Functions (later phases)
+## Edge Functions
 
-Third-party APIs are proxied through Edge Functions so their keys stay server
--side:
-- `plant-id` → Pl@ntNet
-- `comps` → RentCast
-- `parcels` → Regrid
+Third-party APIs and the AI model are proxied through Edge Functions so their
+keys stay server-side:
+
+- **`scene-insights`** (implemented, `functions/scene-insights/`) → calls Claude
+  (`claude-opus-4-8`) with a captured frame + context and returns structured
+  `SceneInsight[]`. Deploy and configure:
+  ```bash
+  supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+  supabase functions deploy scene-insights
+  ```
+- `plant-id` → Pl@ntNet (later)
+- `comps` → RentCast (later)
+- `parcels` → Regrid (later)
 
 Set their keys as Supabase function secrets (never in the Unity client). See
 `.env.example` for the client-side values the app needs.
