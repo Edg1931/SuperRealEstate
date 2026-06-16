@@ -94,8 +94,11 @@ overlay, the cost math, and the catalog all pointing at the same thing.
 - 🟡 **Renovation ROI**: reno cost (this engine) × comps → "≈ $X added value."
 - 🔵 **AI auto-redesign** of a whole room (open-concept, modern kitchen) the user
   then refines — beats the 2D-only AI tools by producing an editable 3D result.
-- 🔵 **Diminished-reality wall removal** (truly *see through* a removed wall) —
-  the hardest, unshipped-in-market capability; high-wow, treat as research.
+- 🟡 **Wall removal as a scan portal** — show a wall gone by compositing the
+  already-scanned adjacent room over it on passthrough (not live inpainting).
+  Feasible for see-through now; walk-through in empty shells. Full live
+  diminished reality (incomplete-scan inpainting + relighting) is the research
+  frontier. See `docs/Diminished-Reality.md`.
 
 ## Caveats we will not paper over
 

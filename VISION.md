@@ -187,7 +187,10 @@ see it in AR**.
   design (reuses the measurement + `CostEstimator` core; demolition + materials
   + a labor estimate). Pair with comps for **renovation ROI**.
 - 🟡 **Before/after in AR**: stand in the real room and toggle existing ↔
-  renovated; "ghost" a removed wall so a buyer *sees* the open concept.
+  renovated; **"remove" a wall as a portal into the already-scanned adjacent
+  room** — feasible on passthrough headsets because we composite a *known* scan,
+  not inpaint the unknown (see `docs/Diminished-Reality.md`). See-through works
+  in an occupied home; true walk-through is for empty shells / new construction.
 - 🟡 **Desktop 3D editing → on-site viewing**: heavy editing at a PC (precise
   modeling tools), then register and walk it on glasses — same PC→site bridge as
   the blueprint workflow.

@@ -72,6 +72,10 @@
 - [ ] Desktop authoring scene (Unity Standalone) driving the engine — see
       `docs/Desktop-Authoring.md`. *(in-editor)*
 - [ ] AR re-finish (recolor/retexture) + before/after toggle. *(in-editor)*
+- [x] Wall-removal portal model + aperture math + `IPortalRenderer` contract
+      (`docs/Diminished-Reality.md`).
+- [ ] Portal renderer impl: stencil + depth-occlusion + scan/splat draw on
+      passthrough (visionOS / Android XR). *(in-editor)*
 - [ ] ZIP-localized cost factors + "get real bids" handoff.
 
 ## Phase 8 — Property data overlays (Pillar 2)
