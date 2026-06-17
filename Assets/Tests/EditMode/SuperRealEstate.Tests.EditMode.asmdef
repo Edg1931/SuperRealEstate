@@ -10,6 +10,7 @@
         "SuperRealEstate.Catalog",
         "SuperRealEstate.Landscape",
         "SuperRealEstate.UI",
+        "SuperRealEstate.Presentation",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

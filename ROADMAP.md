@@ -99,6 +99,15 @@
 - [ ] Build the component visuals (insight card, measurement HUD, radial menu, finish
       chip, budget HUD, plant card) per device. *(in-editor)*
 
+## Phase 12 — Backend client + web companion (cross-cutting)
+- [x] `SupabaseBackendClient` (PostgREST): catalog reads + room/estimate writes.
+- [x] Presentation view-models (`InsightCardVM`/`PlantCardVM`/`MeasurementReadoutVM`)
+      mapping domain → UI tokens. Tested.
+- [x] Next.js web companion (`web/`) — Vercel-ready; catalog page reads Supabase;
+      public-catalog RLS migration `0006`.
+- [ ] Web auth (Supabase) for private rooms/estimates/staging views.
+- [ ] Concrete `IFinishCatalog` over Supabase; recap/share pages.
+
 ## Verification
 
 - **Headless (CI-able):** EditMode tests for `MeasurementService` (area/perimeter/

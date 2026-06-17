@@ -52,12 +52,14 @@ Assets/Scripts/UI/             Spatial design tokens, comfort + eye-tracking mod
 Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
 Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
 Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring
-Assets/Scripts/Services/       Supabase + third-party API clients
+Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
+Assets/Scripts/Presentation/   View-models binding domain → UI tokens (testable)
 Assets/Scripts/UI/             Spatial panels + phone screens
 Assets/Tests/EditMode/         Headless unit tests for the core logic
 Packages/manifest.json         Unity package dependencies
-supabase/                      Database migrations + seed data
-docs/                          Setup guides (e.g. VisionOS-Setup.md)
+supabase/                      Database migrations + seed data + Edge Functions
+web/                           Next.js web companion (deploy to Vercel)
+docs/                          Setup, design system, pipeline, competitive, features
 ```
 
 See [`VISION.md`](./VISION.md) for the full product vision and feature pillars.

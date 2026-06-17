@@ -1,0 +1,20 @@
+{
+    "name": "SuperRealEstate.Presentation",
+    "rootNamespace": "SuperRealEstate.Presentation",
+    "references": [
+        "SuperRealEstate.UI",
+        "SuperRealEstate.RoomMeasure",
+        "SuperRealEstate.MaterialCost",
+        "SuperRealEstate.Insights",
+        "SuperRealEstate.Catalog"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
