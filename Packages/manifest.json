@@ -5,7 +5,8 @@
     "com.unity.polyspatial": "2.0.4",
     "com.unity.polyspatial.visionos": "2.0.4",
     "com.unity.polyspatial.xr": "2.0.4",
-    "com.unity.xr.googlevr": "1.0.0",
+    "com.unity.xr.androidxr-openxr": "1.0.0",
+    "com.unity.xr.hands": "1.5.0",
     "com.unity.inputsystem": "1.11.2",
     "com.unity.test-framework": "1.4.5",
     "com.unity.ugui": "2.0.0",
@@ -13,5 +14,5 @@
     "com.unity.modules.unitywebrequest": "1.0.0",
     "com.unity.modules.jsonserialize": "1.0.0"
   },
-  "_comment": "Pin exact versions after confirming the current Unity 6 LTS + PolySpatial + Android XR provider releases. The Android XR provider package id may be 'com.unity.xr.androidxr-openxr' depending on the Unity 6 release; replace 'com.unity.xr.googlevr' accordingly when wiring the Galaxy XR target."
+  "_comment": "Pin exact versions after confirming current releases. visionOS → PolySpatial; Android XR (Galaxy XR / Project Aura) → com.unity.xr.androidxr-openxr over OpenXR + AR Foundation, with com.unity.xr.hands for hand tracking. Eye-gaze interaction is an OpenXR feature toggled in XR Plug-in Management. See docs/AndroidXR-Setup.md."
 }

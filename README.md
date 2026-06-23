@@ -21,6 +21,12 @@ ecosystems:
 > The INMO Air 3 (and similar HUD-only glasses) are **not** targets: they lack
 > depth/world-tracking and cannot do room measurement or world-anchored AR.
 
+**Android XR is a first-class target, not a port** — Galaxy XR (headset) and
+Project Aura-class glasses run the *same* Unity project via the Android XR OpenXR
+provider + AR Foundation. Per-device differences are handled by capability
+profiles (`Assets/Scripts/Platform/`). See `docs/AndroidXR-Setup.md` and
+`docs/VisionOS-Setup.md`.
+
 ## MVP
 
 **Walk into a room → auto-measure → live material-cost estimate.** See
@@ -54,6 +60,7 @@ Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
 Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring
 Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
 Assets/Scripts/Presentation/   View-models binding domain → UI tokens (testable)
+Assets/Scripts/Platform/       Per-device XR capability profiles (testable)
 Assets/Scripts/UI/             Spatial panels + phone screens
 Assets/Tests/EditMode/         Headless unit tests for the core logic
 Packages/manifest.json         Unity package dependencies

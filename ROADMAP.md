@@ -108,6 +108,14 @@
 - [ ] Web auth (Supabase) for private rooms/estimates/staging views.
 - [ ] Concrete `IFinishCatalog` over Supabase; recap/share pages.
 
+## Phase 13 — Android XR as a co-primary target
+- [x] `Platform` assembly: `XrCapabilities` + per-device profiles (feature gates). Tested.
+- [x] Android XR packages in `manifest.json` (`androidxr-openxr`, `xr.hands`).
+- [x] `docs/AndroidXR-Setup.md` (Galaxy XR + Project Aura).
+- [ ] Enable Android XR OpenXR provider + features; build to Galaxy XR / emulator. *(in-editor)*
+- [ ] Cross-platform shared anchors (visionOS ↔ Android XR ↔ phone). *(in-editor)*
+- [ ] Per-device input/UI affordances (gaze+pinch / controller / touch) from the design system.
+
 ## Verification
 
 - **Headless (CI-able):** EditMode tests for `MeasurementService` (area/perimeter/

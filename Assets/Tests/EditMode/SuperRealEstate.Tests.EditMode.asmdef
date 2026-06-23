@@ -11,6 +11,7 @@
         "SuperRealEstate.Landscape",
         "SuperRealEstate.UI",
         "SuperRealEstate.Presentation",
+        "SuperRealEstate.Platform",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
