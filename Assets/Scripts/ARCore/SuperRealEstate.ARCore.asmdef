@@ -4,8 +4,11 @@
     "references": [
         "Unity.XR.ARFoundation",
         "Unity.XR.CoreUtils",
+        "Unity.InputSystem",
         "SuperRealEstate.RoomMeasure",
-        "SuperRealEstate.MaterialCost"
+        "SuperRealEstate.MaterialCost",
+        "SuperRealEstate.UI",
+        "SuperRealEstate.Platform"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

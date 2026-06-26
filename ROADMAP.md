@@ -115,11 +115,19 @@
 - [x] `SharedAnchorPayload`: cross-platform co-location token (ARKit/Cloud/OpenXR).
 - [x] Android XR packages in `manifest.json` (`androidxr-openxr`, `xr.hands`).
 - [x] Docs: `AndroidXR-Setup.md`, `PLATFORM-PLAYBOOK.md` (gaze nuance + parity), `POLISH-REVIEW.md`.
-- [ ] Android XR adapter: provider/features + eye-gaze+pinch → `GazeInteractionModel`;
-      runnable measurement scene on Galaxy XR. *(in-editor)*
-- [ ] visionOS adapter (PolySpatial hover/tap → same model) in parallel. *(in-editor)*
-- [ ] Phone adapter (touch ray + bottom sheet). *(in-editor)*
+- [x] AR adapter scaffolds: `SpatialPointerInput` (one model, platform-bound input),
+      `GazeTarget`, `XrSessionBootstrap` (per-device feature gating).
+- [ ] Bind eye-gaze pose + pinch (Android XR) / spatial pointer (visionOS) /
+      camera+tap (phone) to `SpatialPointerInput.pointerOrigin`. *(in-editor)*
+- [ ] Assemble + build the measurement scene to Galaxy XR. *(in-editor)*
 - [ ] Cross-platform shared anchors (Cloud Anchors) wiring. *(in-editor)*
+
+## Phase 14 — Voice agent (Gemini/Claude)
+- [x] `voice-agent` Edge Function (Claude): transcript + context → spoken reply +
+      structured app action. Device does speech I/O.
+- [x] `Voice` assembly: models, `IVoiceAgent`, `EdgeFunctionVoiceAgent`,
+      `VoiceResponseParser` (tested intent mapping).
+- [ ] Wire device STT/TTS (Android XR/Gemini, iOS speech) → dispatch actions. *(in-editor)*
 
 ## Verification
 

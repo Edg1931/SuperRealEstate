@@ -57,7 +57,8 @@ Assets/Scripts/Landscape/      Plant ID + bulk-material calculators (mulch, etc.
 Assets/Scripts/UI/             Spatial design tokens, comfort + eye-tracking model
 Assets/Scripts/Collaboration/  Shared multi-device sessions + spatial anchors (contracts)
 Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
-Assets/Scripts/ARCore/         AR Foundation session/plane/mesh wiring
+Assets/Scripts/ARCore/         AR Foundation wiring + cross-platform input adapters
+Assets/Scripts/Voice/          Conversational agent (transcript → reply + action)
 Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
 Assets/Scripts/Presentation/   View-models binding domain → UI tokens (testable)
 Assets/Scripts/Platform/       Per-device XR capability profiles (testable)

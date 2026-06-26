@@ -50,6 +50,10 @@ keys stay server-side:
   from a frame, returns `PlantIdentification[]`. Same deploy/secret as above
   (`supabase functions deploy plant-id`). Upgrade path: front with Pl@ntNet/
   Plant.id for species accuracy, enrich with Claude.
+- **`voice-agent`** (implemented, `functions/voice-agent/`) → turns a spoken
+  transcript (+ optional measurements/location/snapshot) into a spoken reply +
+  an app action (measure, identify plant, estimate material, remove wall, …).
+  `supabase functions deploy voice-agent`. Device handles speech I/O.
 - `comps` → RentCast (later)
 - `parcels` → Regrid (later)
 

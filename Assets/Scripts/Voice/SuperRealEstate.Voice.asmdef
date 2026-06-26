@@ -1,0 +1,16 @@
+{
+    "name": "SuperRealEstate.Voice",
+    "rootNamespace": "SuperRealEstate.Voice",
+    "references": [
+        "SuperRealEstate.RoomMeasure"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

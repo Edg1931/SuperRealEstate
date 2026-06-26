@@ -12,6 +12,7 @@
         "SuperRealEstate.UI",
         "SuperRealEstate.Presentation",
         "SuperRealEstate.Platform",
+        "SuperRealEstate.Voice",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
