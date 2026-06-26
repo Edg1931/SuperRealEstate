@@ -85,6 +85,8 @@
 - [ ] Verify RentCast/Regrid endpoint+field specifics (flagged in code).
 - [x] Overlay builders: parcel lines + comp tags (`Overlays.ParcelOverlayBuilder`/
       `CompsOverlayBuilder`, tested) + renderer contracts; AR anchoring in-editor.
+- [x] Risk/lifestyle overlays: flood/wildfire/noise/school
+      (`Overlays.RiskOverlayBuilder`, fair-housing-safe + advisory, tested).
 
 ## Phase 9 — Phone/tablet companion + deliverables (Pillars 5)
 - [ ] Build same project to iOS/Android; companion screens for saved rooms/estimates/staging.
@@ -159,6 +161,12 @@
       `ARCore.ProjectStagingController` (load → register → AutoStager → render).
 - [ ] Concrete `IProjectStore` (Supabase) + AR prefab `IStagedSceneRenderer`. *(in-editor)*
 - [ ] Desktop/phone design surface. *(in-editor)*
+
+## Phase 17 — Security & hardening
+- [x] Full RLS + Edge Function audit (`docs/SECURITY-AUDIT.md`).
+- [x] Migration `0009`: closes the open session self-join (high) → invite-code
+      joins via `session_invites` + `join_session()` SECURITY DEFINER.
+- [ ] Enforce Edge Function auth assertion + rate limiting + payload caps. *(follow-up)*
 
 ## Verification
 
