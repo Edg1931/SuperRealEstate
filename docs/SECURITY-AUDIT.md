@@ -16,17 +16,18 @@ private design session.
 function that adds the caller only on a valid, unexpired invite. Hosts may add
 participants directly; everyone else must redeem a code.
 
-### 🟠 Edge Function abuse / cost
-`scene-insights`, `plant-id`, `voice-agent`, `comps`, `parcels`,
-`cubicasa-import`, `matterport-import` call paid third-party APIs (Anthropic,
-RentCast, Regrid). **Keep Supabase `verify_jwt` ON** (the default) so only
-authenticated users can invoke them, and add **per-user rate limiting** and a
-**payload size cap** (reject oversized `imageBase64`/`transcript`). Recommended,
-not yet enforced in code.
+### 🟠 Edge Function abuse / cost — ADDRESSED (defense-in-depth)
+All functions (`scene-insights`, `plant-id`, `voice-agent`, `comps`, `parcels`,
+`cubicasa-import`, `matterport-import`, `valuation`) call paid third-party APIs.
+Now hardened via `supabase/functions/_shared/guard.ts`: each asserts an
+`Authorization` Bearer token (`requireAuth`) on top of Supabase `verify_jwt`,
+caps the body size (`readJson`), and routes errors through `toResponse`.
+**Still recommended:** per-user **rate limiting** (not expressible in-function;
+do it at the gateway / a counter table) — keep `verify_jwt` ON.
 
-### 🟡 Edge Function input validation
-Add explicit size/shape guards: cap base64 image bytes (e.g. ≤ a few MB), cap
-`transcript` length, and validate lat/lng ranges before calling providers.
+### 🟡 Edge Function input validation — ADDRESSED
+Guards added: `capBase64` (image ≤ ~6 MB), `capString` (transcript ≤ 4000),
+`validateLatLng` ([-90,90]/[-180,180]). Applied across the functions.
 
 ### 🟡 CORS `Access-Control-Allow-Origin: *`
 Fine for the headset/native clients; if the **web companion** calls functions

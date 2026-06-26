@@ -52,17 +52,17 @@ query GetModel($id: ID!) {
   }
 }`;
 
-function corsHeaders(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type, apikey",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
+import {
+  corsHeaders,
+  GuardError,
+  jsonHeaders,
+  readJson,
+  requireAuth,
+  toResponse,
+} from "../_shared/guard.ts";
 
-function jsonHeaders(): HeadersInit {
-  return { ...corsHeaders(), "content-type": "application/json" };
-}
+// Payload cap (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB
 
 interface RequestBody {
   modelId?: string;
@@ -91,33 +91,23 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders() });
   }
+
+  try {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
   }
 
+  requireAuth(req);
+
   const token = Deno.env.get("MATTERPORT_TOKEN");
   if (!token) {
-    return new Response(JSON.stringify({ error: "MATTERPORT_TOKEN not configured" }), {
-      status: 500,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(500, "MATTERPORT_TOKEN not configured");
   }
 
-  let body: RequestBody;
-  try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
-  }
+  const body = await readJson<RequestBody>(req, MAX_BODY_BYTES);
 
   if (!body.modelId) {
-    return new Response(JSON.stringify({ error: "modelId is required" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(400, "modelId is required");
   }
 
   let upstream: Response;
@@ -155,6 +145,9 @@ Deno.serve(async (req: Request) => {
   const model = mapModel(raw as Record<string, unknown>, body.modelId);
 
   return new Response(JSON.stringify(model), { status: 200, headers: jsonHeaders() });
+  } catch (err) {
+    return toResponse(err);
+  }
 });
 
 // Maps a Matterport Model API response to BuildingModel JSON, SEEDING rooms from

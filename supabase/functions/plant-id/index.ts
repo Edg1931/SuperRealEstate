@@ -10,8 +10,20 @@
 // Key stays server-side:  supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.69.0";
+import {
+  capBase64,
+  corsHeaders,
+  GuardError,
+  readJson,
+  requireAuth,
+  toResponse,
+} from "../_shared/guard.ts";
 
 const MODEL = "claude-opus-4-8";
+
+// Payload caps (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // ~6 MB decoded
 
 const PLANTS_SCHEMA = {
   type: "object",
@@ -58,41 +70,30 @@ For each clearly visible plant:
 - Set confidence honestly (0..1); if unsure of the exact species, give the most likely genus and lower the confidence.
 All identifications are ADVISORY — note in "note" anything to confirm with a horticulturist/arborist when it matters (e.g. tree health or removal). Prefer 1-4 plants over an exhaustive list.`;
 
-function corsHeaders(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders() });
+
+  try {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
   }
 
+  requireAuth(req);
+
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }), {
-      status: 500, headers: { ...corsHeaders(), "content-type": "application/json" },
-    });
+    throw new GuardError(500, "ANTHROPIC_API_KEY not configured");
   }
 
-  let body: { imageBase64?: string; mediaType?: "image/jpeg" | "image/png" };
-  try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400, headers: { ...corsHeaders(), "content-type": "application/json" },
-    });
-  }
+  const body = await readJson<{ imageBase64?: string; mediaType?: "image/jpeg" | "image/png" }>(
+    req,
+    MAX_BODY_BYTES,
+  );
 
   if (!body.imageBase64) {
-    return new Response(JSON.stringify({ error: "imageBase64 required" }), {
-      status: 400, headers: { ...corsHeaders(), "content-type": "application/json" },
-    });
+    throw new GuardError(400, "imageBase64 required");
   }
+  capBase64(body.imageBase64, MAX_IMAGE_BYTES, "imageBase64");
 
   const client = new Anthropic({ apiKey });
   try {
@@ -118,5 +119,8 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: message }), {
       status: 502, headers: { ...corsHeaders(), "content-type": "application/json" },
     });
+  }
+  } catch (err) {
+    return toResponse(err);
   }
 });

@@ -10,22 +10,23 @@
 // as a ground overlay. ADVISORY: GIS data is approximate, not a survey
 // (see VISION.md guardrails).
 
+import {
+  corsHeaders,
+  GuardError,
+  jsonHeaders,
+  readJson,
+  requireAuth,
+  toResponse,
+  validateLatLng,
+} from "../_shared/guard.ts";
+
 const REGRID_BASE = "https://app.regrid.com/api/v2";
 
 // Meters per degree of latitude (≈ constant). Longitude is scaled by cos(lat).
 const METERS_PER_DEG_LAT = 111_320;
 
-function corsHeaders(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type, apikey",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
-
-function jsonHeaders(): HeadersInit {
-  return { ...corsHeaders(), "content-type": "application/json" };
-}
+// Payload cap (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB
 
 interface RequestBody {
   lat?: number;
@@ -49,34 +50,25 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders() });
   }
+
+  try {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
   }
 
+  requireAuth(req);
+
   const apiKey = Deno.env.get("REGRID_API_KEY");
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "REGRID_API_KEY not configured" }), {
-      status: 500,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(500, "REGRID_API_KEY not configured");
   }
 
-  let body: RequestBody;
-  try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
-  }
+  const body = await readJson<RequestBody>(req, MAX_BODY_BYTES);
 
   if (typeof body.lat !== "number" || typeof body.lng !== "number") {
-    return new Response(JSON.stringify({ error: "lat and lng are required numbers" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(400, "lat and lng are required numbers");
   }
+  validateLatLng(body.lat, body.lng);
 
   // Regrid "Parcels by point" — returns a GeoJSON FeatureCollection for the
   // parcel containing the point. VERIFY against current Regrid docs: exact path,
@@ -112,6 +104,9 @@ Deno.serve(async (req: Request) => {
   const parcel = mapParcel(raw as Record<string, unknown>, body.lat, body.lng);
 
   return new Response(JSON.stringify(parcel), { status: 200, headers: jsonHeaders() });
+  } catch (err) {
+    return toResponse(err);
+  }
 });
 
 // Maps a Regrid GeoJSON FeatureCollection to ParcelInfo, projecting the boundary

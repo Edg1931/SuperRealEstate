@@ -29,17 +29,17 @@ const CUBICASA_BASE = "https://api.cubi.casa"; // VERIFY exact host/path.
 // METERS (cm → 100, mm → 1000). Wrong units = wrong room areas downstream.
 const UNITS_PER_METER = 100; // VERIFY: assumes centimeters.
 
-function corsHeaders(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type, apikey",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
+import {
+  corsHeaders,
+  GuardError,
+  jsonHeaders,
+  readJson,
+  requireAuth,
+  toResponse,
+} from "../_shared/guard.ts";
 
-function jsonHeaders(): HeadersInit {
-  return { ...corsHeaders(), "content-type": "application/json" };
-}
+// Payload cap (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB
 
 interface RequestBody {
   jobId?: string;
@@ -88,33 +88,23 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders() });
   }
+
+  try {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
   }
 
+  requireAuth(req);
+
   const apiKey = Deno.env.get("CUBICASA_API_KEY");
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "CUBICASA_API_KEY not configured" }), {
-      status: 500,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(500, "CUBICASA_API_KEY not configured");
   }
 
-  let body: RequestBody;
-  try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
-  }
+  const body = await readJson<RequestBody>(req, MAX_BODY_BYTES);
 
   if (!body.jobId && !body.exportUrl) {
-    return new Response(JSON.stringify({ error: "jobId or exportUrl is required" }), {
-      status: 400,
-      headers: jsonHeaders(),
-    });
+    throw new GuardError(400, "jobId or exportUrl is required");
   }
 
   // VERIFY: the exact export endpoint + field name for the vector geometry.
@@ -153,6 +143,9 @@ Deno.serve(async (req: Request) => {
   const model = mapModel(raw as Record<string, unknown>, body.jobId ?? "cubicasa");
 
   return new Response(JSON.stringify(model), { status: 200, headers: jsonHeaders() });
+  } catch (err) {
+    return toResponse(err);
+  }
 });
 
 // Maps a CubiCasa vector floor-plan export to the BuildingModel JSON shape.

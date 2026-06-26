@@ -173,7 +173,9 @@
 - [x] Full RLS + Edge Function audit (`docs/SECURITY-AUDIT.md`).
 - [x] Migration `0009`: closes the open session self-join (high) → invite-code
       joins via `session_invites` + `join_session()` SECURITY DEFINER.
-- [ ] Enforce Edge Function auth assertion + rate limiting + payload caps. *(follow-up)*
+- [x] Edge Function hardening: `_shared/guard.ts` (auth assertion + payload/size
+      caps + lat/lng validation) applied to all 8 functions.
+- [ ] Per-user rate limiting at the gateway / counter table. *(follow-up)*
 
 ## Verification
 

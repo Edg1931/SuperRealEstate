@@ -9,8 +9,23 @@
 //   supabase functions deploy voice-agent
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.69.0";
+import {
+  capBase64,
+  capString,
+  corsHeaders as cors,
+  GuardError,
+  readJson,
+  requireAuth,
+  toResponse,
+  validateLatLng,
+} from "../_shared/guard.ts";
 
 const MODEL = "claude-opus-4-8";
+
+// Payload caps (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // ~6 MB decoded
+const MAX_TRANSCRIPT_CHARS = 4000;
 
 const ACTION_TYPES = [
   "none", "measure_room", "identify_plant", "estimate_material",
@@ -52,38 +67,31 @@ Turn the user's spoken request into:
    - none: pure conversation / answer, no app action.
 Pick the single best action; use "none" if it's just a question you can answer in the reply. Leave unused string fields as "". Keep replies under ~2 sentences. If a snapshot/measurements are provided, use them.`;
 
-function cors(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors() });
+
+  try {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: cors() });
+
+  requireAuth(req);
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }), {
-      status: 500, headers: { ...cors(), "content-type": "application/json" },
-    });
+    throw new GuardError(500, "ANTHROPIC_API_KEY not configured");
   }
 
-  let body: {
+  const body = await readJson<{
     transcript?: string;
     measurements?: Record<string, number>;
     latitude?: number; longitude?: number; imageBase64?: string;
-  };
-  try { body = await req.json(); }
-  catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...cors(), "content-type": "application/json" } }); }
+  }>(req, MAX_BODY_BYTES);
 
   if (!body.transcript) {
-    return new Response(JSON.stringify({ error: "transcript required" }), {
-      status: 400, headers: { ...cors(), "content-type": "application/json" },
-    });
+    throw new GuardError(400, "transcript required");
   }
+  capString(body.transcript, MAX_TRANSCRIPT_CHARS, "transcript");
+  capBase64(body.imageBase64, MAX_IMAGE_BYTES, "imageBase64");
+  validateLatLng(body.latitude, body.longitude);
 
   const content: Anthropic.ContentBlockParam[] = [];
   if (body.imageBase64) {
@@ -117,5 +125,8 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: message }), {
       status: 502, headers: { ...cors(), "content-type": "application/json" },
     });
+  }
+  } catch (err) {
+    return toResponse(err);
   }
 });

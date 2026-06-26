@@ -12,8 +12,21 @@
 // and a disclaimer, enforcing the responsible-AI guardrails in VISION.md.
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.69.0";
+import {
+  capBase64,
+  corsHeaders,
+  GuardError,
+  readJson,
+  requireAuth,
+  toResponse,
+  validateLatLng,
+} from "../_shared/guard.ts";
 
 const MODEL = "claude-opus-4-8";
+
+// Payload caps (defense-in-depth; see docs/SECURITY-AUDIT.md).
+const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // ~6 MB decoded
 
 const CATEGORIES = [
   "Measurement", "Cost", "Condition", "Light", "Comp",
@@ -101,14 +114,6 @@ disclaimer to confirm before purchase; set confidence honestly and leave brand/
 product empty if you can't tell. This drives "what's here + what it costs" and
 one-tap re-finishing.`;
 
-function corsHeaders(): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
-
 interface RequestBody {
   imageBase64?: string;
   mediaType?: "image/jpeg" | "image/png";
@@ -124,27 +129,22 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders() });
   }
+
+  try {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
   }
 
+  requireAuth(req);
+
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }), {
-      status: 500,
-      headers: { ...corsHeaders(), "content-type": "application/json" },
-    });
+    throw new GuardError(500, "ANTHROPIC_API_KEY not configured");
   }
 
-  let body: RequestBody;
-  try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: { ...corsHeaders(), "content-type": "application/json" },
-    });
-  }
+  const body = await readJson<RequestBody>(req, MAX_BODY_BYTES);
+  capBase64(body.imageBase64, MAX_IMAGE_BYTES, "imageBase64");
+  validateLatLng(body.latitude, body.longitude);
 
   // Assemble the user turn: the captured frame plus a compact context block.
   const content: Anthropic.ContentBlockParam[] = [];
@@ -193,5 +193,8 @@ Deno.serve(async (req: Request) => {
       status: 502,
       headers: { ...corsHeaders(), "content-type": "application/json" },
     });
+  }
+  } catch (err) {
+    return toResponse(err);
   }
 });
