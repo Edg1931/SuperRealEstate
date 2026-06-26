@@ -60,6 +60,7 @@ Assets/Scripts/Insights/       AI scene analysis + surface-finish recognition
 Assets/Scripts/ARCore/         AR Foundation wiring + cross-platform input adapters
 Assets/Scripts/Voice/          Conversational agent (transcript → reply + action)
 Assets/Scripts/App/            Action dispatcher (voice/tool intent → feature, gated)
+Assets/Scripts/Construction/   Builder tools: MEP systems, clash, as-built, site, sun (testable)
 Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
 Assets/Scripts/Presentation/   View-models binding domain → UI tokens (testable)
 Assets/Scripts/Platform/       Per-device XR capability profiles (testable)

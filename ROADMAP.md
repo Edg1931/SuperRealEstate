@@ -134,6 +134,13 @@
 - [ ] Wire device STT/TTS (Android XR/Gemini, iOS speech) → `EdgeFunctionVoiceAgent`
       → `ActionDispatcher` → scene actions. *(in-editor)*
 
+## Phase 15 — Builder & construction (Pillar 9)
+- [x] `Construction`: `SystemsModel`/`SystemMetrics` (MEP takeoffs), `ClashDetector`,
+      `AsBuiltVerifier`, `SetbackChecker`, `SunPath` — all tested.
+- [x] Schema `0007`: `parcels`, `building_systems`. + `docs/BUILDER-TOOLS.md`.
+- [ ] MEP overlay rendering + blueprint-on-lot walk + as-built capture UI. *(in-editor)*
+- [ ] Parcel ingest (Regrid) + buildable-envelope visual.
+
 ## Verification
 
 - **Headless (CI-able):** EditMode tests for `MeasurementService` (area/perimeter/

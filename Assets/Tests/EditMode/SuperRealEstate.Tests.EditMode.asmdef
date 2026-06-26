@@ -15,6 +15,7 @@
         "SuperRealEstate.Voice",
         "SuperRealEstate.App",
         "SuperRealEstate.Collaboration",
+        "SuperRealEstate.Construction",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

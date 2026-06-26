@@ -212,6 +212,22 @@ The yard is half the property and nobody serves it well in AR.
 - See `docs/FEATURES-BACKLOG.md` for the full idea list and `docs/DESIGN-SYSTEM.md`
   for the spatial UI/eye-tracking design language.
 
+## Pillar 9 — Builder & Construction (Trimble-class, consumer-simple)
+
+For builders and their teams — and buyers who want to *see* the systems. Full
+detail in `docs/BUILDER-TOOLS.md`.
+
+- 🟡 **Walk the blueprint on the lot**: register a plan at 1:1 on the ground,
+  pull the 3D model up out of it, and walk the framed house before it's built —
+  next to the **property lines** and **where the sun rises/sets**.
+- 🟡 **Mechanicals overlay (MEP)**: electrical, plumbing, HVAC, structural, gas,
+  sewer, low-voltage runs + fixtures overlaid on the real structure — buyers see
+  where everything is; crews confirm it's correct.
+- 🟢 **Takeoffs + clash + as-built QA**: linear feet of wire/duct/pipe, fixture
+  counts, trade clashes (duct-through-joist), and designed-vs-installed drift.
+- 🟡 **Site layout**: footprint vs. property lines (setbacks), buildable
+  envelope, sun path — all on the real lot, shared across the crew's devices.
+
 ---
 
 ## Competitive landscape & the gap we exploit
