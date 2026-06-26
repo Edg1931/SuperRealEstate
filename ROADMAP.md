@@ -110,11 +110,16 @@
 
 ## Phase 13 — Android XR as a co-primary target
 - [x] `Platform` assembly: `XrCapabilities` + per-device profiles (feature gates). Tested.
+- [x] `FeatureAvailability`: resolve which features light up per device (+reasons). Tested.
+- [x] `GazeInteractionModel`: platform-agnostic gaze+commit state machine (no Midas touch). Tested.
+- [x] `SharedAnchorPayload`: cross-platform co-location token (ARKit/Cloud/OpenXR).
 - [x] Android XR packages in `manifest.json` (`androidxr-openxr`, `xr.hands`).
-- [x] `docs/AndroidXR-Setup.md` (Galaxy XR + Project Aura).
-- [ ] Enable Android XR OpenXR provider + features; build to Galaxy XR / emulator. *(in-editor)*
-- [ ] Cross-platform shared anchors (visionOS ↔ Android XR ↔ phone). *(in-editor)*
-- [ ] Per-device input/UI affordances (gaze+pinch / controller / touch) from the design system.
+- [x] Docs: `AndroidXR-Setup.md`, `PLATFORM-PLAYBOOK.md` (gaze nuance + parity), `POLISH-REVIEW.md`.
+- [ ] Android XR adapter: provider/features + eye-gaze+pinch → `GazeInteractionModel`;
+      runnable measurement scene on Galaxy XR. *(in-editor)*
+- [ ] visionOS adapter (PolySpatial hover/tap → same model) in parallel. *(in-editor)*
+- [ ] Phone adapter (touch ray + bottom sheet). *(in-editor)*
+- [ ] Cross-platform shared anchors (Cloud Anchors) wiring. *(in-editor)*
 
 ## Verification
 
