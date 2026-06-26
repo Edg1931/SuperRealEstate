@@ -54,7 +54,10 @@ keys stay server-side:
   transcript (+ optional measurements/location/snapshot) into a spoken reply +
   an app action (measure, identify plant, estimate material, remove wall, …).
   `supabase functions deploy voice-agent`. Device handles speech I/O.
-- `comps` → RentCast (later)
+- **`comps`** / **`valuation`** (implemented) → RentCast comparable sales + AVM
+  (env `RENTCAST_API_KEY`). Verify the RentCast endpoints/fields noted in code.
+- **`parcels`** (implemented) → Regrid parcel geometry (env `REGRID_API_KEY`),
+  projected to plan-meter boundary relative to the queried point.
 - `parcels` → Regrid (later)
 
 Set their keys as Supabase function secrets (never in the Unity client). See

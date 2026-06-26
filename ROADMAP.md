@@ -79,7 +79,11 @@
 - [ ] ZIP-localized cost factors + "get real bids" handoff.
 
 ## Phase 8 — Property data overlays (Pillar 2)
-- [ ] Comps (RentCast), parcel/property lines (Regrid), risk/light layers — anchored in space.
+- [x] `PropertyData`: `Comp`/`ParcelInfo`/`PropertyValuation` models, `IPropertyDataProvider`,
+      `EdgeFunctionPropertyData` client, `CompStats` (median $/sqft, value estimate). Tested.
+- [x] Edge Functions `comps`/`valuation` (RentCast) + `parcels` (Regrid).
+- [ ] Verify RentCast/Regrid endpoint+field specifics (flagged in code).
+- [ ] Anchor comps/parcel lines/risk-light layers in space (AR overlay). *(in-editor)*
 
 ## Phase 9 — Phone/tablet companion + deliverables (Pillars 5)
 - [ ] Build same project to iOS/Android; companion screens for saved rooms/estimates/staging.

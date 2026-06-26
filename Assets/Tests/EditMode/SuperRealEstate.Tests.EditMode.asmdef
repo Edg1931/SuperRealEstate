@@ -16,6 +16,7 @@
         "SuperRealEstate.App",
         "SuperRealEstate.Collaboration",
         "SuperRealEstate.Construction",
+        "SuperRealEstate.PropertyData",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
