@@ -8,7 +8,9 @@
         "SuperRealEstate.RoomMeasure",
         "SuperRealEstate.MaterialCost",
         "SuperRealEstate.UI",
-        "SuperRealEstate.Platform"
+        "SuperRealEstate.Platform",
+        "SuperRealEstate.Collaboration",
+        "SuperRealEstate.Staging"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
