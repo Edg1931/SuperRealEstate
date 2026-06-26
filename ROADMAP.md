@@ -145,6 +145,14 @@
 - [ ] MEP overlay rendering + blueprint-on-lot walk + as-built capture UI. *(in-editor)*
 - [ ] Parcel ingest (Regrid) + buildable-envelope visual.
 
+## Phase 16 — Renovation project pipeline (design once → auto-stage in AR)
+- [x] `Projects.RenovationProject` (origin/kind/status + bundled ids); schema `0008`.
+- [x] `Projects.AutoStager`: apply renovation plan + register design (blueprint
+      two-point or shared anchor) → world `StagedScene`. Tested.
+- [x] `docs/RENOVATION-JOURNEY.md` (client journey + Microsoft Layout improvements).
+- [ ] Blueprint-source importers (CubiCasa/Matterport) — see `Acquisition` (parallel).
+- [ ] Desktop/phone design surface + on-device auto-stage on AR load. *(in-editor)*
+
 ## Verification
 
 - **Headless (CI-able):** EditMode tests for `MeasurementService` (area/perimeter/
