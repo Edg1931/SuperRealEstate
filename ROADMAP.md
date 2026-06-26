@@ -126,6 +126,7 @@
       `GazeTarget`, `XrSessionBootstrap` (per-device feature gating).
 - [x] App composition root `ARCore.RealEstateApp` — wires Supabase backend +
       project store + staging controller + renderer (M1, see `docs/SHIPPING.md`).
+- [x] Step-by-step scene-assembly guide: `docs/SCENE-ASSEMBLY-GalaxyXR.md`.
 - [ ] Assemble the scene (XR rig + input source) and build to Galaxy XR. *(in-editor)*
 - [ ] Bind eye-gaze pose + pinch (Android XR) / spatial pointer (visionOS) /
       camera+tap (phone) to `SpatialPointerInput.pointerOrigin`. *(in-editor)*
