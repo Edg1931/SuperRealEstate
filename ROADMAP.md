@@ -124,6 +124,9 @@
 - [x] Docs: `AndroidXR-Setup.md`, `PLATFORM-PLAYBOOK.md` (gaze nuance + parity), `POLISH-REVIEW.md`.
 - [x] AR adapter scaffolds: `SpatialPointerInput` (one model, platform-bound input),
       `GazeTarget`, `XrSessionBootstrap` (per-device feature gating).
+- [x] App composition root `ARCore.RealEstateApp` — wires Supabase backend +
+      project store + staging controller + renderer (M1, see `docs/SHIPPING.md`).
+- [ ] Assemble the scene (XR rig + input source) and build to Galaxy XR. *(in-editor)*
 - [ ] Bind eye-gaze pose + pinch (Android XR) / spatial pointer (visionOS) /
       camera+tap (phone) to `SpatialPointerInput.pointerOrigin`. *(in-editor)*
 - [ ] Assemble + build the measurement scene to Galaxy XR. *(in-editor)*

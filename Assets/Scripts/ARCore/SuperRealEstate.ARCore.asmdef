@@ -12,7 +12,10 @@
         "SuperRealEstate.Collaboration",
         "SuperRealEstate.Staging",
         "SuperRealEstate.Renovation",
-        "SuperRealEstate.Projects"
+        "SuperRealEstate.Projects",
+        "SuperRealEstate.ProjectsBackend",
+        "SuperRealEstate.Services",
+        "SuperRealEstate.ARRender"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
