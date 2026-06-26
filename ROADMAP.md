@@ -159,7 +159,9 @@
 - [ ] Verify CubiCasa/Matterport endpoint+unit+field specifics (flagged in code).
 - [x] On-device auto-stage hook: `Projects.IProjectStore`/`IStagedSceneRenderer` +
       `ARCore.ProjectStagingController` (load → register → AutoStager → render).
-- [ ] Concrete `IProjectStore` (Supabase) + AR prefab `IStagedSceneRenderer`. *(in-editor)*
+- [x] Concrete `IProjectStore`: `ProjectsBackend.SupabaseProjectStore` + pure
+      `ProjectPayloadParser` (edits + placements). Tested.
+- [ ] AR prefab `IStagedSceneRenderer`. *(in-editor)*
 - [ ] Desktop/phone design surface. *(in-editor)*
 
 ## Phase 17 — Security & hardening

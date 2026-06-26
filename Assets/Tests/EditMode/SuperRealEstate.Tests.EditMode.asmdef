@@ -20,6 +20,7 @@
         "SuperRealEstate.Projects",
         "SuperRealEstate.Acquisition",
         "SuperRealEstate.Overlays",
+        "SuperRealEstate.ProjectsBackend",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

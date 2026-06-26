@@ -1,0 +1,19 @@
+{
+    "name": "SuperRealEstate.ProjectsBackend",
+    "rootNamespace": "SuperRealEstate.ProjectsBackend",
+    "references": [
+        "SuperRealEstate.Projects",
+        "SuperRealEstate.Acquisition",
+        "SuperRealEstate.Renovation",
+        "SuperRealEstate.Staging"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
