@@ -142,8 +142,11 @@
       `VoiceResponseParser` (tested intent mapping).
 - [x] `App.ActionDispatcher` + `IAppActions`: route voice/tool intent → feature
       call, gated by device capability (blocked-with-reason). Tested.
+- [x] `ARCore.SceneAppActions` (IAppActions): measure → `RoomMeasureController`,
+      plant/finish → analyzers, material → landscape/finish calculators; emits
+      UnityEvents. Completes dispatcher → scene behavior.
 - [ ] Wire device STT/TTS (Android XR/Gemini, iOS speech) → `EdgeFunctionVoiceAgent`
-      → `ActionDispatcher` → scene actions. *(in-editor)*
+      → `ActionDispatcher` → `SceneAppActions`. *(in-editor)*
 
 ## Phase 15 — Builder & construction (Pillar 9)
 - [x] `Construction`: `SystemsModel`/`SystemMetrics` (MEP takeoffs), `ClashDetector`,

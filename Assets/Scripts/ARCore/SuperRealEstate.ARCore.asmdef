@@ -15,7 +15,10 @@
         "SuperRealEstate.Projects",
         "SuperRealEstate.ProjectsBackend",
         "SuperRealEstate.Services",
-        "SuperRealEstate.ARRender"
+        "SuperRealEstate.ARRender",
+        "SuperRealEstate.App",
+        "SuperRealEstate.Insights",
+        "SuperRealEstate.Landscape"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
