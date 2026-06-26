@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using SuperRealEstate.ARRender;
+using SuperRealEstate.Insights;
 using SuperRealEstate.Projects;
 using SuperRealEstate.ProjectsBackend;
 using SuperRealEstate.Services;
@@ -31,6 +32,12 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private ProjectStagingController stagingController;
         [SerializeField] private StagedSceneRenderer stagedSceneRenderer;
 
+        [Header("Voice / tool command handling (optional)")]
+        [Tooltip("Scene-layer IAppActions: measure, plant ID, finish recognition, estimates.")]
+        [SerializeField] private SceneAppActions sceneActions;
+        [Tooltip("Supplies JPEG camera frames for plant / finish recognition.")]
+        [SerializeField] private ArCameraFrameProvider cameraFrameProvider;
+
         /// <summary>Catalog reads + room/estimate writes.</summary>
         public SupabaseBackendClient Backend { get; private set; }
 
@@ -49,6 +56,32 @@ namespace SuperRealEstate.ARCore
 
             if (stagingController != null && ProjectStore != null && stagedSceneRenderer != null)
                 stagingController.Configure(ProjectStore, stagedSceneRenderer);
+
+            ConfigureSceneActions();
+        }
+
+        /// <summary>
+        /// Wire the voice/tool command handler to the cloud analysis services and
+        /// the AR camera. Plant ID and finish recognition need the Supabase config
+        /// (for the Edge Functions) and a frame source; when either is missing the
+        /// corresponding action degrades to a friendly "not available" message.
+        /// </summary>
+        private void ConfigureSceneActions()
+        {
+            if (sceneActions == null) return;
+
+            EdgeFunctionSceneAnalyzer analyzer = null;
+            EdgeFunctionPlantIdentifier plantId = null;
+            if (!string.IsNullOrEmpty(supabaseUrl))
+            {
+                analyzer = new EdgeFunctionSceneAnalyzer(supabaseUrl, supabaseAnonKey);
+                plantId = new EdgeFunctionPlantIdentifier(supabaseUrl, supabaseAnonKey);
+            }
+
+            System.Func<byte[]> frameProvider =
+                cameraFrameProvider != null ? cameraFrameProvider.CaptureJpeg : (System.Func<byte[]>)null;
+
+            sceneActions.Configure(analyzer, plantId, frameProvider);
         }
 
         /// <summary>After the user signs in, propagate the token so writes pass RLS.</summary>

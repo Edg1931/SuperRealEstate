@@ -60,8 +60,10 @@ slots):
 
 | Object | Component | Fields to set |
 |---|---|---|
-| **App** (empty root) | `ARCore.RealEstateApp` | `supabaseUrl`, `supabaseAnonKey`; drag **App's** `ProjectStagingController` into `stagingController`; drag **Renderers/Staged** into `stagedSceneRenderer` |
+| **App** (empty root) | `ARCore.RealEstateApp` | `supabaseUrl`, `supabaseAnonKey`; drag **App's** `ProjectStagingController` into `stagingController`; drag **Renderers/Staged** into `stagedSceneRenderer`; drag **App's** `SceneAppActions` into `sceneActions`; drag the Main Camera's `ArCameraFrameProvider` into `cameraFrameProvider` |
 | **App** | `ARCore.ProjectStagingController` | (configured at runtime by `RealEstateApp`) |
+| **App** | `ARCore.SceneAppActions` | drag **XR Origin's** `RoomMeasureController` into `roomMeasure`; wire `OnMeasured`/`OnPlants`/`OnFinishes`/`OnInfo` to HUD text (the analyzer + plant ID + frame provider are injected at runtime by `RealEstateApp`) |
+| **Main Camera** (under XR Origin) | `ARCore.ArCameraFrameProvider` | leave `cameraManager` empty (auto-finds the `ARCameraManager` on this object); `jpegQuality = 80`; `maxDimension = 1024` |
 | **App** | `ARCore.XrSessionBootstrap` | `autoDetect = true`; `platform = AndroidXrHeadset`; add **FeatureBindings** (e.g. `WallRemovalPortal` → the portal objects, `GazeUi` → the menu) |
 | **Renderers/Staged** | `ARRender.StagedSceneRenderer` | (optional) populate `PrefabMap` later with furniture prefabs |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
@@ -72,7 +74,14 @@ slots):
 Notes:
 - `RealEstateApp` builds the Supabase backend + project store on `Awake` and calls
   `ProjectStagingController.Configure(...)` — so leave the controller's slots
-  empty; they're set in code.
+  empty; they're set in code. It likewise builds the `scene-insights` + `plant-id`
+  Edge Function clients from the same Supabase config and calls
+  `SceneAppActions.Configure(analyzer, plantId, ArCameraFrameProvider.CaptureJpeg)`
+  — so the analyzer/plant/frame slots on `SceneAppActions` are set in code too.
+- Plant ID and finish recognition only work once `supabaseUrl`/`supabaseAnonKey`
+  are set and the camera is available; without them those actions speak a friendly
+  "not available" message instead of failing. `ArCameraFrameProvider` returns
+  `null` when the platform gates passthrough-camera access (callers handle it).
 - `SpatialPointerInput.Model` is the shared `GazeInteractionModel`; UI/cards add a
   `GazeTarget` (with a Collider) and react via its `OnHover`/`OnSelect` events.
 
