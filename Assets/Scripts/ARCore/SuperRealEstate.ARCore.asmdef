@@ -10,7 +10,9 @@
         "SuperRealEstate.UI",
         "SuperRealEstate.Platform",
         "SuperRealEstate.Collaboration",
-        "SuperRealEstate.Staging"
+        "SuperRealEstate.Staging",
+        "SuperRealEstate.Renovation",
+        "SuperRealEstate.Projects"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

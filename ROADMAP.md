@@ -153,7 +153,10 @@
 - [x] Blueprint-source importers: `Acquisition.CubiCasaImporter`/`MatterportImporter`
       + `BuildingModelParser` (tested) + `cubicasa-import`/`matterport-import` functions.
 - [ ] Verify CubiCasa/Matterport endpoint+unit+field specifics (flagged in code).
-- [ ] Desktop/phone design surface + on-device auto-stage on AR load. *(in-editor)*
+- [x] On-device auto-stage hook: `Projects.IProjectStore`/`IStagedSceneRenderer` +
+      `ARCore.ProjectStagingController` (load → register → AutoStager → render).
+- [ ] Concrete `IProjectStore` (Supabase) + AR prefab `IStagedSceneRenderer`. *(in-editor)*
+- [ ] Desktop/phone design surface. *(in-editor)*
 
 ## Verification
 
