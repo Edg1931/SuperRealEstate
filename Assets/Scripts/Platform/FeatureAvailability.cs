@@ -17,7 +17,8 @@ namespace SuperRealEstate.Platform
         BlueprintAuthoring,
         SharedSession,
         GazeUi,
-        LandscapeCalculators
+        LandscapeCalculators,
+        PropertyOverlays   // comps / parcel lines / risk layers
     }
 
     public readonly struct FeatureStatus
@@ -56,6 +57,7 @@ namespace SuperRealEstate.Platform
             AppFeature.SceneInsights             => true,
             AppFeature.BlueprintAuthoring        => true,
             AppFeature.LandscapeCalculators      => true,
+            AppFeature.PropertyOverlays          => true,
             _ => true,
         };
 

@@ -120,14 +120,19 @@
 - [ ] Bind eye-gaze pose + pinch (Android XR) / spatial pointer (visionOS) /
       camera+tap (phone) to `SpatialPointerInput.pointerOrigin`. *(in-editor)*
 - [ ] Assemble + build the measurement scene to Galaxy XR. *(in-editor)*
-- [ ] Cross-platform shared anchors (Cloud Anchors) wiring. *(in-editor)*
+- [x] Co-location core: `AnchorFrame`, `SessionCoLocator`, `SharedAnchorPayload`
+      + `docs/Co-Location.md` (ARCore Cloud Anchors cross-platform). Tested.
+- [ ] Concrete `ISpatialAnchorService` per platform (Cloud Anchors / OpenXR / ARKit). *(in-editor)*
 
 ## Phase 14 — Voice agent (Gemini/Claude)
 - [x] `voice-agent` Edge Function (Claude): transcript + context → spoken reply +
       structured app action. Device does speech I/O.
 - [x] `Voice` assembly: models, `IVoiceAgent`, `EdgeFunctionVoiceAgent`,
       `VoiceResponseParser` (tested intent mapping).
-- [ ] Wire device STT/TTS (Android XR/Gemini, iOS speech) → dispatch actions. *(in-editor)*
+- [x] `App.ActionDispatcher` + `IAppActions`: route voice/tool intent → feature
+      call, gated by device capability (blocked-with-reason). Tested.
+- [ ] Wire device STT/TTS (Android XR/Gemini, iOS speech) → `EdgeFunctionVoiceAgent`
+      → `ActionDispatcher` → scene actions. *(in-editor)*
 
 ## Verification
 
