@@ -150,7 +150,9 @@
 - [x] `Projects.AutoStager`: apply renovation plan + register design (blueprint
       two-point or shared anchor) → world `StagedScene`. Tested.
 - [x] `docs/RENOVATION-JOURNEY.md` (client journey + Microsoft Layout improvements).
-- [ ] Blueprint-source importers (CubiCasa/Matterport) — see `Acquisition` (parallel).
+- [x] Blueprint-source importers: `Acquisition.CubiCasaImporter`/`MatterportImporter`
+      + `BuildingModelParser` (tested) + `cubicasa-import`/`matterport-import` functions.
+- [ ] Verify CubiCasa/Matterport endpoint+unit+field specifics (flagged in code).
 - [ ] Desktop/phone design surface + on-device auto-stage on AR load. *(in-editor)*
 
 ## Verification

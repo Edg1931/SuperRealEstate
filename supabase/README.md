@@ -58,6 +58,10 @@ keys stay server-side:
   (env `RENTCAST_API_KEY`). Verify the RentCast endpoints/fields noted in code.
 - **`parcels`** (implemented) → Regrid parcel geometry (env `REGRID_API_KEY`),
   projected to plan-meter boundary relative to the queried point.
+- **`cubicasa-import`** (implemented) → CubiCasa floor-plan export → BuildingModel
+  JSON (env `CUBICASA_API_KEY`). Verify endpoint/units/field names per code notes.
+- **`matterport-import`** (implemented) → Matterport Model API (Property
+  Intelligence) → rooms seeded from read-only dimensions (env `MATTERPORT_TOKEN`).
 - `parcels` → Regrid (later)
 
 Set their keys as Supabase function secrets (never in the Unity client). See

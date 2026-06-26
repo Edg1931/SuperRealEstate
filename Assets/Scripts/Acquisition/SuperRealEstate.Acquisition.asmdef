@@ -1,0 +1,16 @@
+{
+    "name": "SuperRealEstate.Acquisition",
+    "rootNamespace": "SuperRealEstate.Acquisition",
+    "references": [
+        "SuperRealEstate.Renovation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
