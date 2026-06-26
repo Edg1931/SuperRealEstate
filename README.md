@@ -64,6 +64,7 @@ Assets/Scripts/Construction/   Builder tools: MEP systems, clash, as-built, site
 Assets/Scripts/PropertyData/   Comps, parcels, valuation (provider + stats) (testable)
 Assets/Scripts/Projects/       Renovation project + auto-stager (design → AR) (testable)
 Assets/Scripts/Acquisition/    Blueprint import: CubiCasa, Matterport → BuildingModel (testable)
+Assets/Scripts/Overlays/       MEP + parcel + comp AR overlay builders (testable)
 Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
 Assets/Scripts/Presentation/   View-models binding domain → UI tokens (testable)
 Assets/Scripts/Platform/       Per-device XR capability profiles (testable)

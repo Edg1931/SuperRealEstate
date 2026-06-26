@@ -83,7 +83,8 @@
       `EdgeFunctionPropertyData` client, `CompStats` (median $/sqft, value estimate). Tested.
 - [x] Edge Functions `comps`/`valuation` (RentCast) + `parcels` (Regrid).
 - [ ] Verify RentCast/Regrid endpoint+field specifics (flagged in code).
-- [ ] Anchor comps/parcel lines/risk-light layers in space (AR overlay). *(in-editor)*
+- [x] Overlay builders: parcel lines + comp tags (`Overlays.ParcelOverlayBuilder`/
+      `CompsOverlayBuilder`, tested) + renderer contracts; AR anchoring in-editor.
 
 ## Phase 9 — Phone/tablet companion + deliverables (Pillars 5)
 - [ ] Build same project to iOS/Android; companion screens for saved rooms/estimates/staging.
@@ -142,7 +143,8 @@
 - [x] `Construction`: `SystemsModel`/`SystemMetrics` (MEP takeoffs), `ClashDetector`,
       `AsBuiltVerifier`, `SetbackChecker`, `SunPath` — all tested.
 - [x] Schema `0007`: `parcels`, `building_systems`. + `docs/BUILDER-TOOLS.md`.
-- [ ] MEP overlay rendering + blueprint-on-lot walk + as-built capture UI. *(in-editor)*
+- [x] MEP overlay builder (`Overlays.SystemsOverlayBuilder`, trade colors + markers, tested).
+- [ ] MEP/parcel/comp AR renderers (LineRenderer + world labels); as-built capture UI. *(in-editor)*
 - [ ] Parcel ingest (Regrid) + buildable-envelope visual.
 
 ## Phase 16 — Renovation project pipeline (design once → auto-stage in AR)

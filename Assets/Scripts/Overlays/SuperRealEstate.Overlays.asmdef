@@ -1,0 +1,17 @@
+{
+    "name": "SuperRealEstate.Overlays",
+    "rootNamespace": "SuperRealEstate.Overlays",
+    "references": [
+        "SuperRealEstate.Construction",
+        "SuperRealEstate.PropertyData"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
