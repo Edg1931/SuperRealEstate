@@ -1,0 +1,21 @@
+{
+    "name": "SuperRealEstate.ARRender",
+    "rootNamespace": "SuperRealEstate.ARRender",
+    "references": [
+        "SuperRealEstate.Projects",
+        "SuperRealEstate.Overlays",
+        "SuperRealEstate.Staging",
+        "SuperRealEstate.Renovation",
+        "SuperRealEstate.RoomMeasure",
+        "SuperRealEstate.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

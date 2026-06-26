@@ -161,7 +161,12 @@
       `ARCore.ProjectStagingController` (load → register → AutoStager → render).
 - [x] Concrete `IProjectStore`: `ProjectsBackend.SupabaseProjectStore` + pure
       `ProjectPayloadParser` (edits + placements). Tested.
-- [ ] AR prefab `IStagedSceneRenderer`. *(in-editor)*
+- [x] Payload contract locked: `ProjectPayloadSerializer` (round-trip tested) +
+      `web/lib/projectPayload.ts` + `docs/PROJECT-PAYLOAD-CONTRACT.md`.
+- [x] AR renderers (scaffold MonoBehaviours): `ARRender.StagedSceneRenderer` +
+      `SystemsOverlayRenderer` + `PropertyOverlayRenderer`.
+- [ ] Real furniture prefabs + tuned materials; the phone/desktop design surface
+      that writes the locked payload shape. *(in-editor / web)*
 - [ ] Desktop/phone design surface. *(in-editor)*
 
 ## Phase 17 — Security & hardening

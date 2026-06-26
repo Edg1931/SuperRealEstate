@@ -63,7 +63,8 @@ Assets/Scripts/App/            Action dispatcher (voice/tool intent → feature,
 Assets/Scripts/Construction/   Builder tools: MEP systems, clash, as-built, site, sun (testable)
 Assets/Scripts/PropertyData/   Comps, parcels, valuation (provider + stats) (testable)
 Assets/Scripts/Projects/       Renovation project + auto-stager (design → AR) (testable)
-Assets/Scripts/ProjectsBackend/Supabase project store + payload parsers (testable)
+Assets/Scripts/ProjectsBackend/Supabase project store + payload parsers/serializer (testable)
+Assets/Scripts/ARRender/       In-scene renderers (staged scene + overlays) — MonoBehaviours
 Assets/Scripts/Acquisition/    Blueprint import: CubiCasa, Matterport → BuildingModel (testable)
 Assets/Scripts/Overlays/       MEP + parcel + comp AR overlay builders (testable)
 Assets/Scripts/Services/       Supabase backend client (PostgREST) + contracts
