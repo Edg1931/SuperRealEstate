@@ -10,6 +10,7 @@
         "SuperRealEstate.UI",
         "SuperRealEstate.Platform",
         "SuperRealEstate.Collaboration",
+        "SuperRealEstate.CollaborationBackend",
         "SuperRealEstate.Staging",
         "SuperRealEstate.Renovation",
         "SuperRealEstate.Projects",

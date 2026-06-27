@@ -1,0 +1,17 @@
+{
+    "name": "SuperRealEstate.CollaborationBackend",
+    "rootNamespace": "SuperRealEstate.CollaborationBackend",
+    "references": [
+        "SuperRealEstate.Collaboration",
+        "SuperRealEstate.Staging"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

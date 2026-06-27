@@ -60,7 +60,7 @@ slots):
 
 | Object | Component | Fields to set |
 |---|---|---|
-| **App** (empty root) | `ARCore.RealEstateApp` | `supabaseUrl`, `supabaseAnonKey`; drag **App's** `ProjectStagingController` into `stagingController`; drag **Renderers/Staged** into `stagedSceneRenderer`; drag **App's** `SceneAppActions` into `sceneActions`; drag the Main Camera's `ArCameraFrameProvider` into `cameraFrameProvider`; drag **Renderers/Portal** into `wallPortalRenderer` |
+| **App** (empty root) | `ARCore.RealEstateApp` | `supabaseUrl`, `supabaseAnonKey`; drag **App's** `ProjectStagingController` into `stagingController`; drag **Renderers/Staged** into `stagedSceneRenderer`; drag **App's** `SceneAppActions` into `sceneActions`; drag the Main Camera's `ArCameraFrameProvider` into `cameraFrameProvider`; drag **Renderers/Portal** into `wallPortalRenderer`; drag **App's** `SharedSessionSync` into `sharedSessionSync` |
 | **App** | `ARCore.ProjectStagingController` | (configured at runtime by `RealEstateApp`) |
 | **App** | `ARCore.SceneAppActions` | drag **XR Origin's** `RoomMeasureController` into `roomMeasure`; wire `OnMeasured`/`OnPlants`/`OnFinishes`/`OnInfo` to HUD text (the analyzer + plant ID + frame provider are injected at runtime by `RealEstateApp`) |
 | **Main Camera** (under XR Origin) | `ARCore.ArCameraFrameProvider` | leave `cameraManager` empty (auto-finds the `ARCameraManager` on this object); `jpegQuality = 80`; `maxDimension = 1024` |
@@ -69,8 +69,10 @@ slots):
 | **Renderers/Portal** | `ARRender.WallPortalRenderer` | (optional) set `stencilMaterial` (stencil shader) + `opaqueMaterial`; add revealed-room materials to `RevealedCaptureMaterials` by capture id later. `RealEstateApp` injects this into `SceneAppActions` so a "remove wall" command opens a portal |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
 | **Renderers/Property** | `ARRender.PropertyOverlayRenderer` | — |
+| **App** | `ARCore.SharedSessionSync` | `pollIntervalSeconds = 1.5`; wire `OnPlacementChanged`/`OnPlacementRemoved` to the staging renderer and `OnParticipantJoined`/`OnParticipantLeft` to the roster UI (the service is injected at runtime by `RealEstateApp`). Call `BeginSync()` after a session is created/joined |
 | **XR Origin** | `ARCore.RoomMeasureController` | drag the XR Origin's `AR Plane Manager` into `planeManager`; `defaultCeilingHeight = 2.5` |
 | **Input** (empty) | `ARCore.SpatialPointerInput` | `pointerOrigin = GazePointer (transform)`; `selectAction = your Select action`; `maxDistance = 8`; `targetMask = Default` |
+| **GazePointer** | `ARCore.PointerPoseDriver` | `target = GazePointer (this transform)`; bind `positionAction`/`rotationAction` to the **OpenXR eye-gaze pose** (Android XR) or the **visionOS pointer pose**; on phones leave them empty and set `fallbackSource = Main Camera`. This is our alternative to a raw Tracked Pose Driver (step 4) |
 
 Notes:
 - `RealEstateApp` builds the Supabase backend + project store on `Awake` and calls

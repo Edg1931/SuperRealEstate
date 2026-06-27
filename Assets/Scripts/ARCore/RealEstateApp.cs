@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using SuperRealEstate.ARRender;
+using SuperRealEstate.CollaborationBackend;
 using SuperRealEstate.Insights;
 using SuperRealEstate.Projects;
 using SuperRealEstate.ProjectsBackend;
@@ -40,11 +41,18 @@ namespace SuperRealEstate.ARCore
         [Tooltip("Renders a removed wall as a portal into the pre-scanned space.")]
         [SerializeField] private WallPortalRenderer wallPortalRenderer;
 
+        [Header("Shared sessions (optional)")]
+        [Tooltip("Polls + broadcasts shared-session edits to every participant's device.")]
+        [SerializeField] private SharedSessionSync sharedSessionSync;
+
         /// <summary>Catalog reads + room/estimate writes.</summary>
         public SupabaseBackendClient Backend { get; private set; }
 
         /// <summary>Loads a saved project's model/plan/design.</summary>
         public IProjectStore ProjectStore { get; private set; }
+
+        /// <summary>Shared multi-device session backbone (create/join/sync).</summary>
+        public SupabaseSharedSessionService Sessions { get; private set; }
 
         public bool IsConfigured => ProjectStore != null && stagingController != null && stagedSceneRenderer != null;
 
@@ -54,10 +62,14 @@ namespace SuperRealEstate.ARCore
             {
                 Backend = new SupabaseBackendClient(supabaseUrl, supabaseAnonKey);
                 ProjectStore = new SupabaseProjectStore(supabaseUrl, supabaseAnonKey);
+                Sessions = new SupabaseSharedSessionService(supabaseUrl, supabaseAnonKey);
             }
 
             if (stagingController != null && ProjectStore != null && stagedSceneRenderer != null)
                 stagingController.Configure(ProjectStore, stagedSceneRenderer);
+
+            if (sharedSessionSync != null && Sessions != null)
+                sharedSessionSync.Configure(Sessions);
 
             ConfigureSceneActions();
         }
@@ -90,7 +102,11 @@ namespace SuperRealEstate.ARCore
         }
 
         /// <summary>After the user signs in, propagate the token so writes pass RLS.</summary>
-        public void SetAccessToken(string token) => Backend?.SetAccessToken(token);
+        public void SetAccessToken(string token)
+        {
+            Backend?.SetAccessToken(token);
+            Sessions?.SetAccessToken(token);
+        }
 
         /// <summary>
         /// Stage a saved project on the real site from two ground correspondences
