@@ -54,6 +54,9 @@ namespace SuperRealEstate.ARCore
         /// <summary>Shared multi-device session backbone (create/join/sync).</summary>
         public SupabaseSharedSessionService Sessions { get; private set; }
 
+        /// <summary>Optional Realtime channel for low-latency placements + presence.</summary>
+        public SupabaseRealtimeChannel RealtimeChannel { get; private set; }
+
         public bool IsConfigured => ProjectStore != null && stagingController != null && stagedSceneRenderer != null;
 
         private void Awake()
@@ -63,13 +66,17 @@ namespace SuperRealEstate.ARCore
                 Backend = new SupabaseBackendClient(supabaseUrl, supabaseAnonKey);
                 ProjectStore = new SupabaseProjectStore(supabaseUrl, supabaseAnonKey);
                 Sessions = new SupabaseSharedSessionService(supabaseUrl, supabaseAnonKey);
+                RealtimeChannel = new SupabaseRealtimeChannel(supabaseUrl, supabaseAnonKey);
             }
 
             if (stagingController != null && ProjectStore != null && stagedSceneRenderer != null)
                 stagingController.Configure(ProjectStore, stagedSceneRenderer);
 
             if (sharedSessionSync != null && Sessions != null)
+            {
                 sharedSessionSync.Configure(Sessions);
+                if (RealtimeChannel != null) sharedSessionSync.ConfigureRealtime(RealtimeChannel);
+            }
 
             ConfigureSceneActions();
         }
@@ -106,6 +113,7 @@ namespace SuperRealEstate.ARCore
         {
             Backend?.SetAccessToken(token);
             Sessions?.SetAccessToken(token);
+            RealtimeChannel?.SetAccessToken(token);
         }
 
         /// <summary>

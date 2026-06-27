@@ -153,12 +153,15 @@ namespace SuperRealEstate.CollaborationBackend
             {
                 layout_id = layoutId,
                 furniture_asset_id = NullIfEmpty(placement.FurnitureAssetId),
+                catalog_item_id = NullIfEmpty(placement.CatalogItemId),
                 pos_x = placement.Position.x, pos_y = placement.Position.y, pos_z = placement.Position.z,
                 rot_y_deg = placement.YawDegrees, scale = placement.Scale,
                 anchor_id = NullIfEmpty(placement.AnchorId),
             };
 
-            string body = OmitEmpty(JsonUtility.ToJson(dto), "furniture_asset_id", "anchor_id");
+            // The placement_single_source CHECK requires at most one source set;
+            // OmitEmpty drops the empty one so the other is the sole source.
+            string body = OmitEmpty(JsonUtility.ToJson(dto), "furniture_asset_id", "catalog_item_id", "anchor_id");
             if (!string.IsNullOrEmpty(placement.Id))
             {
                 // Update existing row.
@@ -248,7 +251,7 @@ namespace SuperRealEstate.CollaborationBackend
             if (string.IsNullOrEmpty(layoutId)) return;
 
             string json = await Get(
-                $"/staging_placements?layout_id=eq.{Esc(layoutId)}&select=id,furniture_asset_id,pos_x,pos_y,pos_z,rot_y_deg,scale,anchor_id,updated_at", ct);
+                $"/staging_placements?layout_id=eq.{Esc(layoutId)}&select=id,furniture_asset_id,catalog_item_id,pos_x,pos_y,pos_z,rot_y_deg,scale,anchor_id,updated_at", ct);
             PlacementRow[] rows = Rows<PlacementRowList, PlacementRow>(json);
 
             var seen = new HashSet<string>();
@@ -284,6 +287,7 @@ namespace SuperRealEstate.CollaborationBackend
         {
             Id = r.id,
             FurnitureAssetId = r.furniture_asset_id,
+            CatalogItemId = r.catalog_item_id,
             Position = new Vector3(r.pos_x, r.pos_y, r.pos_z),
             YawDegrees = r.rot_y_deg,
             Scale = r.scale == 0f ? 1f : r.scale,
@@ -451,7 +455,7 @@ namespace SuperRealEstate.CollaborationBackend
         [Serializable] private sealed class SessionInsert { public string host_id, property_id, status; }
         [Serializable] private sealed class ParticipantInsert { public string session_id, user_id, role, device_kind; }
         [Serializable] private sealed class PlacementWrite {
-            public string layout_id, furniture_asset_id, anchor_id;
+            public string layout_id, furniture_asset_id, catalog_item_id, anchor_id;
             public float pos_x, pos_y, pos_z, rot_y_deg, scale; }
 
         [Serializable] private sealed class SessionRow { public string id, host_id, property_id, layout_id, spatial_anchor_id, status; }
@@ -461,7 +465,7 @@ namespace SuperRealEstate.CollaborationBackend
         [Serializable] private sealed class ParticipantRowList : IRowList<ParticipantRow> { public ParticipantRow[] items; public ParticipantRow[] Items => items; }
 
         [Serializable] private sealed class PlacementRow {
-            public string id, furniture_asset_id, anchor_id, updated_at;
+            public string id, furniture_asset_id, catalog_item_id, anchor_id, updated_at;
             public float pos_x, pos_y, pos_z, rot_y_deg, scale; }
         [Serializable] private sealed class PlacementRowList : IRowList<PlacementRow> { public PlacementRow[] items; public PlacementRow[] Items => items; }
     }
