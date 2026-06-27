@@ -9,6 +9,7 @@ using SuperRealEstate.App;
 using SuperRealEstate.Insights;
 using SuperRealEstate.Landscape;
 using SuperRealEstate.MaterialCost;
+using SuperRealEstate.Renovation;
 using SuperRealEstate.RoomMeasure;
 
 namespace SuperRealEstate.ARCore
@@ -56,6 +57,12 @@ namespace SuperRealEstate.ARCore
         private IPlantIdentifier _plantIdentifier;
         private Func<byte[]> _frameProvider;
 
+        // Renovation: portal renderer + the model whose walls can be "removed".
+        private IPortalRenderer _portalRenderer;
+        private BuildingModel _buildingModel;
+        private Matrix4x4 _modelToWorld = Matrix4x4.identity;
+        private readonly HashSet<string> _openPortals = new HashSet<string>();
+
         // Last successful measurement, so EstimateMaterial can reuse the floor area.
         private RoomMeasurements? _lastMeasurements;
 
@@ -78,6 +85,35 @@ namespace SuperRealEstate.ARCore
             _plantIdentifier = plantIdentifier;
             _frameProvider = frameProvider;
         }
+
+        /// <summary>
+        /// Inject the renovation portal renderer so <see cref="RemoveWallAsync"/>
+        /// can show a removed wall as a portal into the pre-scanned adjacent space.
+        /// Optional; absent it reports "preview coming soon".
+        /// </summary>
+        public void ConfigureRenovation(IPortalRenderer portalRenderer)
+        {
+            _portalRenderer = portalRenderer;
+        }
+
+        /// <summary>
+        /// Set the active building model whose walls can be virtually removed.
+        /// Provide it when a project/scan loads; <see cref="RemoveWallAsync"/>
+        /// looks up walls by id here.
+        /// </summary>
+        public void SetBuildingModel(BuildingModel model)
+        {
+            _buildingModel = model;
+            _openPortals.Clear();
+        }
+
+        /// <summary>
+        /// Set the transform that maps the building model's plan coordinates into
+        /// world space — the same registration the staged scene used (e.g. from
+        /// the blueprint walk). Without it, walls are assumed authored at the world
+        /// origin. Apply it so a removed-wall portal lands on the real wall.
+        /// </summary>
+        public void SetModelToWorld(Matrix4x4 modelToWorld) => _modelToWorld = modelToWorld;
 
         /// <inheritdoc />
         public Task MeasureRoomAsync(CancellationToken ct = default)
@@ -274,12 +310,85 @@ namespace SuperRealEstate.ARCore
         }
 
         /// <inheritdoc />
-        public Task RemoveWallAsync(string wallId, CancellationToken ct = default)
+        public async Task RemoveWallAsync(string wallId, CancellationToken ct = default)
         {
-            // Placeholder so the dispatcher path is complete end to end; the
-            // renovation/mesh-edit layer isn't wired here yet.
-            OnInfo.Invoke($"Removing wall {wallId}… (preview coming soon)");
-            return Task.CompletedTask;
+            if (_portalRenderer == null)
+            {
+                OnInfo.Invoke("wall removal isn't available right now");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(wallId))
+            {
+                OnInfo.Invoke("tell me which wall to remove");
+                return;
+            }
+
+            // Toggle: if this wall is already opened, restore it.
+            if (_openPortals.Contains(wallId))
+            {
+                try { await _portalRenderer.HidePortalAsync(wallId, ct); }
+                catch (OperationCanceledException) { return; }
+                _openPortals.Remove(wallId);
+                OnInfo.Invoke("Wall restored.");
+                return;
+            }
+
+            Wall wall = FindWall(wallId);
+            if (wall == null)
+            {
+                OnInfo.Invoke("couldn't find that wall in the current model");
+                return;
+            }
+
+            try
+            {
+                WallAperture aperture = ToWorld(WallApertureBuilder.Build(wall));
+                var portal = new RemovedWallPortal
+                {
+                    Id = wallId,
+                    WallId = wallId,
+                    Mode = PortalRenderMode.StencilCutout,
+                };
+
+                await _portalRenderer.ShowPortalAsync(portal, aperture, ct);
+                _openPortals.Add(wallId);
+                OnInfo.Invoke("Wall removed — showing the space beyond.");
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation is not an error.
+            }
+            catch (Exception e)
+            {
+                OnInfo.Invoke("couldn't remove that wall");
+                Debug.LogWarning($"[SceneAppActions] RemoveWall failed: {e.Message}");
+            }
+        }
+
+        private Wall FindWall(string wallId)
+        {
+            if (_buildingModel?.Walls == null) return null;
+            foreach (Wall w in _buildingModel.Walls)
+                if (w != null && w.Id == wallId) return w;
+            return null;
+        }
+
+        /// <summary>Map a model-space aperture into world space via the registration transform.</summary>
+        private WallAperture ToWorld(WallAperture a)
+        {
+            if (_modelToWorld == Matrix4x4.identity || a.Corners == null)
+                return a;
+
+            var corners = new Vector3[a.Corners.Length];
+            for (int i = 0; i < corners.Length; i++)
+                corners[i] = _modelToWorld.MultiplyPoint3x4(a.Corners[i]);
+
+            Vector3 center = _modelToWorld.MultiplyPoint3x4(a.Center);
+            Vector3 normal = _modelToWorld.MultiplyVector(a.Normal);
+            normal = normal.sqrMagnitude > 1e-8f ? normal.normalized : a.Normal;
+
+            return new WallAperture(corners, center, normal, a.AreaM2);
         }
 
         /// <inheritdoc />

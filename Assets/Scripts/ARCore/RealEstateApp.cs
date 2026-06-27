@@ -37,6 +37,8 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private SceneAppActions sceneActions;
         [Tooltip("Supplies JPEG camera frames for plant / finish recognition.")]
         [SerializeField] private ArCameraFrameProvider cameraFrameProvider;
+        [Tooltip("Renders a removed wall as a portal into the pre-scanned space.")]
+        [SerializeField] private WallPortalRenderer wallPortalRenderer;
 
         /// <summary>Catalog reads + room/estimate writes.</summary>
         public SupabaseBackendClient Backend { get; private set; }
@@ -82,6 +84,9 @@ namespace SuperRealEstate.ARCore
                 cameraFrameProvider != null ? cameraFrameProvider.CaptureJpeg : (System.Func<byte[]>)null;
 
             sceneActions.Configure(analyzer, plantId, frameProvider);
+
+            if (wallPortalRenderer != null)
+                sceneActions.ConfigureRenovation(wallPortalRenderer);
         }
 
         /// <summary>After the user signs in, propagate the token so writes pass RLS.</summary>
