@@ -26,9 +26,24 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private float rowWidthM = 0.62f;
         [SerializeField] private float rowHeightM = 0.08f;
 
+        // Inter-row gap sized to clear the eye-gaze minimum angular spacing.
+        private static readonly float Gap =
+            SpatialComfort.AngularToMeters(SpatialComfort.MinTargetSpacingDeg * 1.6f, SpatialComfort.DepthSweetM);
+
         private GameObject _current;
+        private Transform _root; // persistent billboarded container (seated once)
 
         private void Awake() { if (anchor == null) anchor = transform; }
+
+        private Transform Root()
+        {
+            if (_root != null) return _root;
+            var go = new GameObject("SettingsPanelRoot");
+            go.transform.SetParent(anchor, worldPositionStays: false);
+            go.AddComponent<BillboardToUser>();
+            _root = go.transform;
+            return _root;
+        }
 
         private void OnEnable()
         {
@@ -60,10 +75,11 @@ namespace SuperRealEstate.ARCore
                     () => settings.SetAnalyticsOptIn(!s.AnalyticsOptIn)),
             };
 
-            float pad = DesignTokens.SpaceM;
-            float height = pad * 2f + rows.Count * (rowHeightM + DesignTokens.SpaceS);
+            float pad = DesignTokens.SpaceL;
+            float height = pad * 2f + rows.Count * (rowHeightM + Gap);
             _current = SpatialPanelBuilder.Build(panelWidthM, height, "SettingsPanel");
-            _current.transform.SetParent(anchor, worldPositionStays: false);
+            _current.transform.SetParent(Root(), worldPositionStays: false);
+            _current.transform.localPosition = Vector3.zero; // billboarded root handles facing/placement
 
             float y = height * 0.5f - pad - rowHeightM * 0.5f;
             foreach (Row r in rows)
@@ -71,7 +87,7 @@ namespace SuperRealEstate.ARCore
                 GameObject btn = SpatialButtonBuilder.Build(r.Id, r.Label, rowWidthM, rowHeightM, r.OnSelect, font);
                 btn.transform.SetParent(_current.transform, worldPositionStays: false);
                 btn.transform.localPosition = new Vector3(0f, y, -0.004f);
-                y -= rowHeightM + DesignTokens.SpaceS;
+                y -= rowHeightM + Gap;
             }
         }
 

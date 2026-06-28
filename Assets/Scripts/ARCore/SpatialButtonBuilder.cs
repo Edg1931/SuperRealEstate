@@ -40,6 +40,12 @@ namespace SuperRealEstate.ARCore
             if (onSelect != null)
                 target.OnSelect.AddListener(() => onSelect());
 
+            // Hover/press feedback — brightens the accent bar + grows on hover.
+            Color accentColor = accent ?? DesignTokens.Accent;
+            var feedback = root.AddComponent<SpatialHoverFeedback>();
+            var barRenderer = bar != null ? bar.GetComponentInChildren<Renderer>() : null;
+            feedback.SetHighlight(barRenderer, accentColor, Color.Lerp(accentColor, DesignTokens.OnSurface, 0.4f));
+
             if (font != null && !string.IsNullOrEmpty(label))
                 AddLabel(root.transform, label, font, widthM, heightM);
 

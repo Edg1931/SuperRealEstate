@@ -32,8 +32,19 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private float buttonHeightM = 0.08f;
 
         private GameObject _current;
+        private Transform _root; // persistent billboarded container (seated once)
 
         private void Awake() { if (anchor == null) anchor = transform; }
+
+        private Transform Root()
+        {
+            if (_root != null) return _root;
+            var go = new GameObject("OnboardingPanelRoot");
+            go.transform.SetParent(anchor, worldPositionStays: false);
+            go.AddComponent<BillboardToUser>(); // seats in the comfort zone once, then faces the user
+            _root = go.transform;
+            return _root;
+        }
 
         private void OnEnable()
         {
@@ -92,14 +103,20 @@ namespace SuperRealEstate.ARCore
             }
         }
 
+        // Inter-target gap sized so eye-gaze targets clear the minimum angular
+        // spacing (~1°) at the sweet depth — SpaceS alone is too tight to gaze.
+        private static readonly float Gap =
+            SpatialComfort.AngularToMeters(SpatialComfort.MinTargetSpacingDeg * 1.6f, SpatialComfort.DepthSweetM);
+
         private void BuildPanel(string title, IReadOnlyList<ButtonSpec> buttons)
         {
             float titleH = buttonHeightM * 1.1f;
-            float pad = DesignTokens.SpaceM;
-            float height = pad * 2f + titleH + buttons.Count * (buttonHeightM + DesignTokens.SpaceS);
+            float pad = DesignTokens.SpaceL;
+            float height = pad * 2f + titleH + buttons.Count * (buttonHeightM + Gap);
 
             _current = SpatialPanelBuilder.Build(panelWidthM, height, "OnboardingPanel");
-            _current.transform.SetParent(anchor, worldPositionStays: false);
+            _current.transform.SetParent(Root(), worldPositionStays: false);
+            _current.transform.localPosition = Vector3.zero; // billboarded root handles facing/placement
 
             float top = height * 0.5f - pad;
 
@@ -107,13 +124,13 @@ namespace SuperRealEstate.ARCore
             if (font != null)
                 AddTitle(_current.transform, title, top - titleH * 0.5f);
 
-            float y = top - titleH - DesignTokens.SpaceS - buttonHeightM * 0.5f;
+            float y = top - titleH - Gap - buttonHeightM * 0.5f;
             foreach (ButtonSpec b in buttons)
             {
                 GameObject btn = SpatialButtonBuilder.Build(b.Id, b.Label, buttonWidthM, buttonHeightM, b.OnSelect, font);
                 btn.transform.SetParent(_current.transform, worldPositionStays: false);
                 btn.transform.localPosition = new Vector3(0f, y, -0.004f);
-                y -= buttonHeightM + DesignTokens.SpaceS;
+                y -= buttonHeightM + Gap;
             }
         }
 
