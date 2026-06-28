@@ -70,7 +70,9 @@ slots):
 | **App** | `ARCore.VoiceCommandController` | drag into `RealEstateApp.voiceCommandController`; set `RealEstateApp.targetPlatform` to your device. Feed recognized speech to `Submit(transcript)` and speak `OnReply` with platform TTS; `OnActionBlocked`/`OnError` for fallbacks |
 | **App** | `ARCore.SettingsService` | units/quality/voice/analytics/UI-scale, persisted to PlayerPrefs; settings UI binds `OnChanged` and calls the setters |
 | **App** | `ARCore.TelemetryService` | drag `ConsentService` + `SettingsService` in; only emits when Analytics consent AND opt-in are both on. `Track("event")` from feature code |
-| **App** | `ARCore.OnboardingController` | drag `ConsentService` + the `RealEstateApp` in; bind `OnStep`/`OnStatus`/`OnCompleted` to your onboarding panels (build them with `SpatialPanelBuilder`); buttons call `Next`/`GrantCamera`/`SignIn`/`SkipSignIn` |
+| **App** | `ARCore.OnboardingController` | drag `ConsentService` + the `RealEstateApp` in; bind `OnStep`/`OnStatus`/`OnCompleted` to the view below; buttons call `Next`/`GrantCamera`/`SignIn`/`SkipSignIn` |
+| **UI/Onboarding** | `ARCore.OnboardingPanelView` | drag the `OnboardingController` in; assign a `Font` to label buttons (optional); set `anchor` to where the panel floats. Builds a panel per step with buttons wired to the controller (procedural, swap for prefabs later) |
+| **UI/Settings** | `ARCore.SettingsPanelView` | drag the `SettingsService` in; assign a `Font`; rows toggle units/quality/voice/analytics and refresh live from `OnChanged` |
 | **Renderers/Portal** | `ARRender.WallPortalRenderer` | (optional) set `stencilMaterial` (stencil shader) + `opaqueMaterial`; add revealed-room materials to `RevealedCaptureMaterials` by capture id later. `RealEstateApp` injects this into `SceneAppActions` so a "remove wall" command opens a portal |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
 | **Renderers/Property** | `ARRender.PropertyOverlayRenderer` | — |

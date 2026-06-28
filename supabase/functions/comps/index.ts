@@ -65,19 +65,23 @@ Deno.serve(async (req: Request) => {
   }
   validateLatLng(body.lat, body.lng);
 
-  // RentCast Sale Comparables / Sale Listings. The AVM "value" endpoint also
-  // returns a `comparables` array; here we query recent sale listings near the
-  // point. VERIFY against current RentCast docs: exact path, query params, and
-  // response field names (esp. distance + lastSeenDate/saleDate, lat/lng of the
-  // subject for distance) may differ by plan/version.
+  // Comparables come from the RentCast AVM value endpoint, which returns a
+  // `comparables` array of nearby properties (with distance + correlation) used
+  // for the estimate — the documented way to get comps for a point.
+  //
+  // NOTE: do NOT use /listings/sale?status=Sold — sale listings only support
+  // status Active/Inactive (active market), not sold history. The AVM
+  // comparables are the right source for "recent comparable sales nearby".
+  // Verified against RentCast docs (developers.rentcast.io, 2026): /avm/value
+  // accepts latitude/longitude (+ optional maxRadius, compCount, daysOld) and
+  // returns { price, priceRangeLow, priceRangeHigh, comparables: [...] }.
   const params = new URLSearchParams({
     latitude: String(body.lat),
     longitude: String(body.lng),
-    radius: "2",           // miles
-    status: "Sold",
-    limit: "10",
+    maxRadius: "2",        // miles
+    compCount: "10",
   });
-  const url = `${RENTCAST_BASE}/listings/sale?${params.toString()}`;
+  const url = `${RENTCAST_BASE}/avm/value?${params.toString()}`;
 
   let upstream: Response;
   try {
@@ -102,13 +106,15 @@ Deno.serve(async (req: Request) => {
 
   const raw = await upstream.json().catch(() => null);
 
-  // RentCast may return a bare array or an object containing one. Normalize.
-  const records: unknown[] = Array.isArray(raw)
-    ? raw
-    : Array.isArray((raw as Record<string, unknown>)?.listings)
-      ? (raw as { listings: unknown[] }).listings
-      : Array.isArray((raw as Record<string, unknown>)?.comparables)
-        ? (raw as { comparables: unknown[] }).comparables
+  // The AVM value response nests comps under `comparables`. Stay defensive about
+  // shape (a bare array, or `listings`) so a plan/endpoint variation degrades
+  // gracefully rather than erroring.
+  const records: unknown[] = Array.isArray((raw as Record<string, unknown>)?.comparables)
+    ? (raw as { comparables: unknown[] }).comparables
+    : Array.isArray(raw)
+      ? raw
+      : Array.isArray((raw as Record<string, unknown>)?.listings)
+        ? (raw as { listings: unknown[] }).listings
         : [];
 
   const comps: Comp[] = records.map((r) => mapComp(r as Record<string, unknown>)).filter(Boolean) as Comp[];
@@ -119,14 +125,19 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-// Best-effort mapping of a RentCast record to the Comp shape. Field names below
-// are the commonly documented ones; VERIFY and adjust per the live API response.
+// Maps a RentCast AVM comparable to the Comp shape. Verified field names
+// (RentCast property/listing schema): formattedAddress, price, bedrooms,
+// bathrooms, squareFootage, lotSize, distance, correlation, listedDate,
+// lastSeenDate. lastSalePrice/lastSaleDate appear on full property records; we
+// fall back to them when present. Extra `??` aliases keep this resilient to
+// plan/endpoint variation.
 function mapComp(r: Record<string, unknown>): Comp | null {
   if (!r) return null;
 
   const price = num(r.price ?? r.lastSalePrice ?? r.salePrice ?? r.listPrice);
   const sqft = num(r.squareFootage ?? r.livingArea ?? r.sqft);
   const address = str(r.formattedAddress ?? r.address ?? r.addressLine1);
+  if (!address && price === 0) return null; // skip empty records
 
   return {
     address,
@@ -134,10 +145,11 @@ function mapComp(r: Record<string, unknown>): Comp | null {
     beds: num(r.bedrooms ?? r.beds),
     baths: num(r.bathrooms ?? r.baths),
     sqft,
-    // Distance from subject in miles — RentCast sometimes includes this on
-    // comparables results; otherwise leave 0 and let the client recompute.
+    // AVM comparables include `distance` (miles) from the subject point.
     distance_miles: num(r.distance ?? r.distanceMiles),
-    sold_date: str(r.lastSaleDate ?? r.saleDate ?? r.soldDate ?? r.lastSeenDate),
+    // Comps from the AVM are listing-based; prefer a true sale date when the
+    // record carries one, else the last-seen/listed date.
+    sold_date: str(r.lastSaleDate ?? r.saleDate ?? r.soldDate ?? r.lastSeenDate ?? r.listedDate),
     price_per_sqft: sqft > 0 ? price / sqft : 0,
   };
 }

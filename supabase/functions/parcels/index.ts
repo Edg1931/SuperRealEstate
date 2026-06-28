@@ -71,9 +71,12 @@ Deno.serve(async (req: Request) => {
   validateLatLng(body.lat, body.lng);
 
   // Regrid "Parcels by point" — returns a GeoJSON FeatureCollection for the
-  // parcel containing the point. VERIFY against current Regrid docs: exact path,
-  // auth style (token query param vs header), and the property field names under
-  // feature.properties.fields (parcelnumb / ll_gisacre / zoning) may differ.
+  // parcel containing the point. Verified against Regrid docs (support.regrid.com,
+  // 2026): the response is a FeatureCollection; each feature's standardized
+  // attributes live under properties.fields (parcelnumb, parcelnumb_no_formatting,
+  // ll_gisacre, zoning, owner, address, …). Auth is the `token` query param on v1
+  // (this `/parcels/point` path). CONFIRM your account's API version — v2 paths
+  // are under /api/v2 and may use a Bearer header instead.
   const params = new URLSearchParams({
     lat: String(body.lat),
     lon: String(body.lng),

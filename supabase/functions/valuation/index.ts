@@ -59,10 +59,12 @@ Deno.serve(async (req: Request) => {
     }
     validateLatLng(body.lat, body.lng);
 
-    // RentCast AVM: value estimate and (separately) rent estimate. VERIFY against
-    // current RentCast docs: exact paths (/avm/value, /avm/rent/long-term),
-    // required params, and the response field names (price/priceRangeLow/
-    // priceRangeHigh, rent/rentRangeLow) may differ by plan/version.
+    // RentCast AVM: value estimate and (separately) rent estimate. Verified
+    // against RentCast docs (developers.rentcast.io, 2026): /avm/value returns
+    // { price, priceRangeLow, priceRangeHigh, latitude, longitude, comparables };
+    // /avm/rent/long-term returns { rent, rentRangeLow, rentRangeHigh }. Both
+    // accept latitude+longitude (and optional property attributes to sharpen the
+    // estimate). The `?? value?.value/estimate` aliases below are belt-and-suspenders.
     const params = new URLSearchParams({
       latitude: String(body.lat),
       longitude: String(body.lng),
