@@ -12,7 +12,8 @@ import {
   type DesignItem,
   type DesignWall,
 } from "@/lib/design";
-import type { Point2 } from "@/lib/projectPayload";
+import type { Point2, RenovationEdit } from "@/lib/projectPayload";
+import { summarizeEdit } from "@/lib/edits";
 
 // --- Canvas constants ------------------------------------------------------
 const EXTENT_W_M = 12; // plan width  (east, x)
@@ -34,7 +35,20 @@ interface CatalogItem {
   vendor_id: string | null;
 }
 
+// --- Materials row (finish library) ----------------------------------------
+interface MaterialItem {
+  id: string;
+  name: string;
+  brand: string | null;
+  category: string | null;
+}
+
 type Mode = "wall" | "furniture";
+
+// A short label for a wall, used in edit summaries and selects.
+function wallLabel(w: DesignWall): string {
+  return `${w.id} (${w.start.x.toFixed(1)},${w.start.y.toFixed(1)} → ${w.end.x.toFixed(1)},${w.end.y.toFixed(1)})`;
+}
 
 // Coordinate transforms. We draw with y=north pointing UP, so screen-y is
 // flipped relative to plan-y.
@@ -74,6 +88,16 @@ export default function DesignPage() {
   const [pickedCatalogId, setPickedCatalogId] = useState<string>(""); // "" = generic
   const [genericLabel, setGenericLabel] = useState("Box");
 
+  // ----- Renovation edits -----
+  const [edits, setEdits] = useState<RenovationEdit[]>([]);
+  const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [materialsError, setMaterialsError] = useState<string | null>(null);
+  const [materialsLoading, setMaterialsLoading] = useState(true);
+  const [finishWallId, setFinishWallId] = useState<string>(""); // wall to refinish
+  const [finishMaterialId, setFinishMaterialId] = useState<string>("");
+  const [removeWallId, setRemoveWallId] = useState<string>(""); // wall to remove
+  const [ceilingHeightInput, setCeilingHeightInput] = useState<string>("2.7");
+
   // ----- Auth + publish -----
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -107,6 +131,29 @@ export default function DesignPage() {
     };
   }, []);
 
+  // Load materials (finish library) for the renovation-edit picker.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("materials")
+        .select("id,name,brand,category")
+        .order("category", { ascending: true })
+        .order("name", { ascending: true });
+      if (!active) return;
+      if (error) {
+        setMaterialsError(error.message);
+        setMaterials([]);
+      } else {
+        setMaterials((data as MaterialItem[] | null) ?? []);
+      }
+      setMaterialsLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Check auth state once on mount.
   useEffect(() => {
     let active = true;
@@ -132,8 +179,33 @@ export default function DesignPage() {
     return m;
   }, [catalog]);
 
-  const bundle = useMemo(() => toProjectBundle(walls, items), [walls, items]);
+  const bundle = useMemo(
+    () => toProjectBundle(walls, items, [], edits),
+    [walls, items, edits],
+  );
   const bundleJson = useMemo(() => JSON.stringify(bundle, null, 2), [bundle]);
+
+  // Lookup maps for human-readable edit summaries (kept pure in summarizeEdit).
+  const materialNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const mat of materials) m.set(mat.id, mat.name);
+    return m;
+  }, [materials]);
+
+  const wallLabelById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const w of walls) m.set(w.id, w.id);
+    return m;
+  }, [walls]);
+
+  // Wall ids referenced by any RemoveWall edit — used to hint them on canvas.
+  const removedWallIds = useMemo(() => {
+    const s = new Set<string>();
+    for (const e of edits) {
+      if (e.kind === "RemoveWall" && e.targetId) s.add(e.targetId);
+    }
+    return s;
+  }, [edits]);
 
   const selectedItem = useMemo(
     () => items.find((i) => i.id === selectedItemId) ?? null,
@@ -221,7 +293,48 @@ export default function DesignPage() {
   // --- Mutators ---
   const deleteWall = useCallback((id: string) => {
     setWalls((prev) => prev.filter((w) => w.id !== id));
+    // Drop any edits that targeted this wall so we never publish a stale
+    // targetId that no longer exists in the building model geometry.
+    setEdits((prev) => prev.filter((e) => e.targetId !== id));
+    setFinishWallId((cur) => (cur === id ? "" : cur));
+    setRemoveWallId((cur) => (cur === id ? "" : cur));
   }, []);
+
+  // --- Renovation-edit mutators ---
+  const addEdit = useCallback((edit: RenovationEdit) => {
+    setEdits((prev) => [...prev, edit]);
+  }, []);
+
+  const deleteEdit = useCallback((index: number) => {
+    setEdits((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const addWallFinishEdit = useCallback(() => {
+    if (!finishWallId || !finishMaterialId) return;
+    addEdit({
+      id: newId("e"),
+      kind: "ChangeWallFinish",
+      targetId: finishWallId,
+      materialId: finishMaterialId,
+    });
+  }, [finishWallId, finishMaterialId, addEdit]);
+
+  const addRemoveWallEdit = useCallback(() => {
+    if (!removeWallId) return;
+    // Avoid duplicate RemoveWall edits for the same wall.
+    setEdits((prev) => {
+      if (prev.some((e) => e.kind === "RemoveWall" && e.targetId === removeWallId)) {
+        return prev;
+      }
+      return [...prev, { id: newId("e"), kind: "RemoveWall", targetId: removeWallId }];
+    });
+  }, [removeWallId]);
+
+  const addCeilingHeightEdit = useCallback(() => {
+    const value = Number(ceilingHeightInput);
+    if (!Number.isFinite(value) || value <= 0) return;
+    addEdit({ id: newId("e"), kind: "ChangeCeilingHeight", value });
+  }, [ceilingHeightInput, addEdit]);
 
   const deleteItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -235,6 +348,9 @@ export default function DesignPage() {
   const clearAll = useCallback(() => {
     setWalls([]);
     setItems([]);
+    setEdits([]);
+    setFinishWallId("");
+    setRemoveWallId("");
     setPendingStart(null);
     setSelectedItemId(null);
   }, []);
@@ -478,10 +594,11 @@ export default function DesignPage() {
                 0,0
               </text>
 
-              {/* existing walls */}
+              {/* existing walls (dashed/red hint when marked for removal) */}
               {walls.map((w) => {
                 const a = planToScreen(w.start);
                 const b = planToScreen(w.end);
+                const removed = removedWallIds.has(w.id);
                 return (
                   <line
                     key={w.id}
@@ -489,7 +606,7 @@ export default function DesignPage() {
                     y1={a.sy}
                     x2={b.sx}
                     y2={b.sy}
-                    className="design-wall"
+                    className={removed ? "design-wall removed" : "design-wall"}
                     strokeWidth={Math.max(3, w.thicknessM * PX_PER_M)}
                   />
                 );
@@ -684,6 +801,157 @@ export default function DesignPage() {
                     className="tool-btn small danger"
                     onClick={() => deleteWall(w.id)}
                     aria-label={`Delete wall ${w.id}`}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Renovation edits */}
+          <div className="card design-panel">
+            <h3>Edits (renovation)</h3>
+            <p className="meta">
+              Mark renovation changes against the drawn walls. Adding any edit
+              publishes a renovation plan (project kind <span className="pill">renovation</span>).
+            </p>
+
+            {materialsLoading && <div className="meta">Loading materials…</div>}
+            {materialsError && (
+              <div className="meta">
+                Couldn’t load materials ({materialsError}). Finish changes need the
+                materials catalog; wall removal &amp; ceiling height still work.
+              </div>
+            )}
+            {!materialsLoading && !materialsError && materials.length === 0 && (
+              <div className="meta">
+                No materials yet — seed the catalog to enable finish changes.
+              </div>
+            )}
+
+            {/* Change wall finish */}
+            <fieldset className="design-edit-group">
+              <legend>Change wall finish</legend>
+              <label className="design-field">
+                <span>Wall</span>
+                <select
+                  value={finishWallId}
+                  onChange={(e) => setFinishWallId(e.target.value)}
+                  aria-label="Wall to refinish"
+                >
+                  <option value="">Select a wall…</option>
+                  {walls.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {wallLabel(w)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="design-field">
+                <span>Material</span>
+                <select
+                  value={finishMaterialId}
+                  onChange={(e) => setFinishMaterialId(e.target.value)}
+                  aria-label="Finish material"
+                  disabled={materials.length === 0}
+                >
+                  <option value="">Select a material…</option>
+                  {materials.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                      {m.brand ? ` · ${m.brand}` : ""}
+                      {m.category ? ` (${m.category})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="tool-btn"
+                onClick={addWallFinishEdit}
+                disabled={!finishWallId || !finishMaterialId}
+              >
+                Add finish change
+              </button>
+            </fieldset>
+
+            {/* Remove wall */}
+            <fieldset className="design-edit-group">
+              <legend>Remove wall</legend>
+              <label className="design-field">
+                <span>Wall</span>
+                <select
+                  value={removeWallId}
+                  onChange={(e) => setRemoveWallId(e.target.value)}
+                  aria-label="Wall to mark for removal"
+                >
+                  <option value="">Select a wall…</option>
+                  {walls.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {wallLabel(w)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="tool-btn danger"
+                onClick={addRemoveWallEdit}
+                disabled={!removeWallId}
+              >
+                Mark wall for removal
+              </button>
+            </fieldset>
+
+            {/* Change ceiling height */}
+            <fieldset className="design-edit-group">
+              <legend>Change ceiling height</legend>
+              <label className="design-field">
+                <span>New height (m)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={6}
+                  step={0.05}
+                  value={ceilingHeightInput}
+                  onChange={(e) => setCeilingHeightInput(e.target.value)}
+                  aria-label="New ceiling height in meters"
+                />
+              </label>
+              <button
+                type="button"
+                className="tool-btn"
+                onClick={addCeilingHeightEdit}
+                disabled={
+                  !Number.isFinite(Number(ceilingHeightInput)) ||
+                  Number(ceilingHeightInput) <= 0
+                }
+              >
+                Add ceiling-height change
+              </button>
+            </fieldset>
+
+            {/* Current edits list */}
+            <h4 className="design-edit-list-head">Current edits ({edits.length})</h4>
+            {edits.length === 0 && <div className="meta">No edits yet.</div>}
+            <ul className="design-list">
+              {edits.map((e, i) => (
+                <li key={e.id ?? i}>
+                  <span className="meta">
+                    {summarizeEdit(e, {
+                      materialName: (id) => materialNameById.get(id),
+                      targetLabel: (id) => wallLabelById.get(id),
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    className="tool-btn small danger"
+                    onClick={() => deleteEdit(i)}
+                    aria-label={`Delete edit: ${summarizeEdit(e, {
+                      materialName: (id) => materialNameById.get(id),
+                      targetLabel: (id) => wallLabelById.get(id),
+                    })}`}
                   >
                     ✕
                   </button>

@@ -96,6 +96,7 @@ nav.tiles .card:hover { border-color: var(--accent); }
 .design-axis-label { fill: var(--on-surface-muted); font-size: 11px; }
 
 .design-wall { stroke: var(--accent); stroke-linecap: round; }
+.design-wall.removed { stroke: var(--caution); stroke-dasharray: 6 5; opacity: 0.85; }
 .design-wall-preview { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; opacity: 0.7; }
 .design-wall-anchor { fill: var(--accent); }
 .design-cursor { fill: rgba(255,255,255,0.5); }
@@ -110,7 +111,7 @@ nav.tiles .card:hover { border-color: var(--accent); }
 .design-side { display: flex; flex-direction: column; gap: 14px; }
 .design-panel h3 { margin-bottom: 8px; }
 .design-field { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; font-size: 12px; color: var(--on-surface-muted); }
-.design-field select, .design-field input[type="text"], .design-field input[type="email"] {
+.design-field select, .design-field input[type="text"], .design-field input[type="email"], .design-field input[type="number"] {
   background: rgba(0,0,0,0.3);
   color: var(--on-surface);
   border: 1px solid rgba(255,255,255,0.12);
@@ -119,6 +120,13 @@ nav.tiles .card:hover { border-color: var(--accent); }
   font-size: 13px;
 }
 .design-field input[type="range"] { accent-color: var(--accent); }
+
+.design-edit-group {
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+  padding: 8px 10px 10px; margin: 10px 0;
+}
+.design-edit-group legend { font-size: 12px; color: var(--on-surface-muted); padding: 0 4px; }
+.design-edit-list-head { margin: 12px 0 6px; font-size: 13px; }
 
 .design-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .design-list li { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
