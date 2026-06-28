@@ -36,7 +36,20 @@ namespace SuperRealEstate.ARRender
         /// </summary>
         public Dictionary<string, GameObject> PrefabMap { get; } = new Dictionary<string, GameObject>();
 
+        /// <summary>
+        /// Optional asset library of real furniture prefabs; its entries are
+        /// loaded into <see cref="PrefabMap"/> on Awake so assigning art is a
+        /// no-code drop-in. Additional prefabs can still be added to PrefabMap at
+        /// runtime (e.g. models fetched by url).
+        /// </summary>
+        [SerializeField] private FurniturePrefabLibrary furnitureLibrary;
+
         private Transform _root;
+
+        private void Awake() => LoadLibrary(furnitureLibrary);
+
+        /// <summary>Merge a furniture prefab library's entries into <see cref="PrefabMap"/>.</summary>
+        public void LoadLibrary(FurniturePrefabLibrary library) => library?.PopulateInto(PrefabMap);
 
         /// <summary>Builds (or rebuilds) the in-scene visuals for <paramref name="scene"/>.</summary>
         public void Render(StagedScene scene)

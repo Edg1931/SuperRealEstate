@@ -45,8 +45,15 @@ namespace SuperRealEstate.ARCore
         [Tooltip("Polls + broadcasts shared-session edits to every participant's device.")]
         [SerializeField] private SharedSessionSync sharedSessionSync;
 
+        [Header("Auth + consent (optional)")]
+        [Tooltip("Gates capture (camera/scan) behind the user's granted consents.")]
+        [SerializeField] private ConsentService consentService;
+
         /// <summary>Catalog reads + room/estimate writes.</summary>
         public SupabaseBackendClient Backend { get; private set; }
+
+        /// <summary>Sign in / refresh; hand the token to <see cref="SetAccessToken"/>.</summary>
+        public SupabaseAuthClient Auth { get; private set; }
 
         /// <summary>Loads a saved project's model/plan/design.</summary>
         public IProjectStore ProjectStore { get; private set; }
@@ -67,7 +74,11 @@ namespace SuperRealEstate.ARCore
                 ProjectStore = new SupabaseProjectStore(supabaseUrl, supabaseAnonKey);
                 Sessions = new SupabaseSharedSessionService(supabaseUrl, supabaseAnonKey);
                 RealtimeChannel = new SupabaseRealtimeChannel(supabaseUrl, supabaseAnonKey);
+                Auth = new SupabaseAuthClient(supabaseUrl, supabaseAnonKey);
             }
+
+            if (sceneActions != null && consentService != null)
+                sceneActions.SetConsent(consentService);
 
             if (stagingController != null && ProjectStore != null && stagedSceneRenderer != null)
                 stagingController.Configure(ProjectStore, stagedSceneRenderer);
@@ -114,6 +125,26 @@ namespace SuperRealEstate.ARCore
             Backend?.SetAccessToken(token);
             Sessions?.SetAccessToken(token);
             RealtimeChannel?.SetAccessToken(token);
+        }
+
+        /// <summary>
+        /// Sign in with email + password, then propagate the access token to every
+        /// backend so writes pass RLS. Returns the session (caller may persist the
+        /// refresh token). Throws on bad credentials / no Supabase config.
+        /// </summary>
+        public async Task<AuthSession> SignInWithPasswordAsync(string email, string password, CancellationToken ct = default)
+        {
+            if (Auth == null) throw new System.InvalidOperationException("Auth not configured — set the Supabase config.");
+            AuthSession session = await Auth.SignInWithPasswordAsync(email, password, ct);
+            if (session.IsValid) SetAccessToken(session.AccessToken);
+            return session;
+        }
+
+        /// <summary>Request a passwordless magic link (completes out of band).</summary>
+        public Task SendMagicLinkAsync(string email, CancellationToken ct = default)
+        {
+            if (Auth == null) throw new System.InvalidOperationException("Auth not configured — set the Supabase config.");
+            return Auth.SendMagicLinkAsync(email, ct);
         }
 
         /// <summary>

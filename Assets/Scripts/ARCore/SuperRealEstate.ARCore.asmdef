@@ -19,7 +19,8 @@
         "SuperRealEstate.ARRender",
         "SuperRealEstate.App",
         "SuperRealEstate.Insights",
-        "SuperRealEstate.Landscape"
+        "SuperRealEstate.Landscape",
+        "SuperRealEstate.Onboarding"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -9,6 +9,7 @@ using SuperRealEstate.App;
 using SuperRealEstate.Insights;
 using SuperRealEstate.Landscape;
 using SuperRealEstate.MaterialCost;
+using SuperRealEstate.Onboarding;
 using SuperRealEstate.Renovation;
 using SuperRealEstate.RoomMeasure;
 
@@ -57,6 +58,9 @@ namespace SuperRealEstate.ARCore
         private IPlantIdentifier _plantIdentifier;
         private Func<byte[]> _frameProvider;
 
+        // Optional consent gate — capture is blocked until the user has agreed.
+        private ConsentService _consent;
+
         // Renovation: portal renderer + the model whose walls can be "removed".
         private IPortalRenderer _portalRenderer;
         private BuildingModel _buildingModel;
@@ -97,6 +101,13 @@ namespace SuperRealEstate.ARCore
         }
 
         /// <summary>
+        /// Inject the consent gate. When set, capture actions (plant, finish,
+        /// measure) run only if the user has granted the matching consent; when
+        /// null, capture is ungated (e.g. tests / pre-consent dev scenes).
+        /// </summary>
+        public void SetConsent(ConsentService consent) => _consent = consent;
+
+        /// <summary>
         /// Set the active building model whose walls can be virtually removed.
         /// Provide it when a project/scan loads; <see cref="RemoveWallAsync"/>
         /// looks up walls by id here.
@@ -118,6 +129,9 @@ namespace SuperRealEstate.ARCore
         /// <inheritdoc />
         public Task MeasureRoomAsync(CancellationToken ct = default)
         {
+            if (!ConsentOk(CaptureAction.MeasureRoom))
+                return Task.CompletedTask;
+
             if (roomMeasure == null)
             {
                 OnInfo.Invoke("room measurement isn't set up");
@@ -142,6 +156,9 @@ namespace SuperRealEstate.ARCore
         /// <inheritdoc />
         public async Task IdentifyPlantAsync(CancellationToken ct = default)
         {
+            if (!ConsentOk(CaptureAction.IdentifyPlant))
+                return;
+
             if (_plantIdentifier == null || _frameProvider == null)
             {
                 OnInfo.Invoke("plant identification isn't available right now");
@@ -185,6 +202,9 @@ namespace SuperRealEstate.ARCore
         /// <inheritdoc />
         public async Task RecognizeFinishAsync(CancellationToken ct = default)
         {
+            if (!ConsentOk(CaptureAction.RecognizeFinish))
+                return;
+
             if (_sceneAnalyzer == null || _frameProvider == null)
             {
                 OnInfo.Invoke("finish recognition isn't available right now");
@@ -413,6 +433,25 @@ namespace SuperRealEstate.ARCore
         {
             Func<byte[]> provider = _frameProvider;
             return provider != null ? provider() : null;
+        }
+
+        /// <summary>
+        /// Returns true if the action may proceed. When a consent gate is wired and
+        /// the needed consent is missing, emits a clear prompt and returns false.
+        /// </summary>
+        private bool ConsentOk(CaptureAction action)
+        {
+            if (_consent == null || _consent.IsAllowed(action)) return true;
+            ConsentType? missing = _consent.FirstMissing(action);
+            OnInfo.Invoke(missing switch
+            {
+                ConsentType.Camera => "enable camera access to use that",
+                ConsentType.SceneScan => "enable room scanning to use that",
+                ConsentType.Microphone => "enable the microphone to use voice",
+                ConsentType.Location => "enable location to show comps",
+                _ => "that needs a permission you haven't granted",
+            });
+            return false;
         }
 
         /// <summary>

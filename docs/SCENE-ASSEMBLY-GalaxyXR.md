@@ -65,7 +65,8 @@ slots):
 | **App** | `ARCore.SceneAppActions` | drag **XR Origin's** `RoomMeasureController` into `roomMeasure`; wire `OnMeasured`/`OnPlants`/`OnFinishes`/`OnInfo` to HUD text (the analyzer + plant ID + frame provider are injected at runtime by `RealEstateApp`) |
 | **Main Camera** (under XR Origin) | `ARCore.ArCameraFrameProvider` | leave `cameraManager` empty (auto-finds the `ARCameraManager` on this object); `jpegQuality = 80`; `maxDimension = 1024` |
 | **App** | `ARCore.XrSessionBootstrap` | `autoDetect = true`; `platform = AndroidXrHeadset`; add **FeatureBindings** (e.g. `WallRemovalPortal` → the portal objects, `GazeUi` → the menu) |
-| **Renderers/Staged** | `ARRender.StagedSceneRenderer` | (optional) populate `PrefabMap` later with furniture prefabs |
+| **Renderers/Staged** | `ARRender.StagedSceneRenderer` | (optional) assign a `FurniturePrefabLibrary` asset (Create → SuperRealEstate → Furniture Prefab Library; map vendor/asset ids → real prefabs) — it auto-loads into `PrefabMap` on Awake, no code change |
+| **App** | `ARCore.ConsentService` | persists app-level consents (camera/scan/etc.) to PlayerPrefs; the onboarding consent screen calls `Grant`/`Deny`; `RealEstateApp` injects it into `SceneAppActions` to gate capture. Drag into `RealEstateApp.consentService` |
 | **Renderers/Portal** | `ARRender.WallPortalRenderer` | (optional) set `stencilMaterial` (stencil shader) + `opaqueMaterial`; add revealed-room materials to `RevealedCaptureMaterials` by capture id later. `RealEstateApp` injects this into `SceneAppActions` so a "remove wall" command opens a portal |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
 | **Renderers/Property** | `ARRender.PropertyOverlayRenderer` | — |
