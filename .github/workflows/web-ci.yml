@@ -1,0 +1,43 @@
+name: Web CI
+
+# Builds the Next.js web app on every push/PR that touches web/. A green check
+# here = the PC/mobile companion compiles + type-checks (next build runs tsc).
+# Visible in the GitHub mobile app under the commit/PR "Checks" tab.
+
+on:
+  push:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: build web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # No package-lock.json is committed, so install (not ci).
+      - name: Install dependencies
+        run: npm install
+
+      # next build type-checks (tsc) and compiles — fails red on either.
+      - name: Build
+        run: npm run build
+        env:
+          # Dummy public env so the build never trips on missing config; the app
+          # detects real config at runtime (isSupabaseConfigured()).
+          NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder-anon-key"

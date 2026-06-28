@@ -1,10 +1,17 @@
 # SuperRealEstate
 
+[![Web CI](https://github.com/Edg1931/SuperRealEstate/actions/workflows/web-ci.yml/badge.svg)](https://github.com/Edg1931/SuperRealEstate/actions/workflows/web-ci.yml)
+
 An augmented-reality toolkit for realtors and buyers. Walk through a property
 with an AR/XR headset (or phone) and get instant, contextual information:
 auto-measured rooms with live material-cost estimates, plant/vegetation
 identification, property lines and neighborhood comps, and virtual furniture
 staging.
+
+> **See it on your phone:** the web companion auto-deploys a live preview URL on
+> every push (Vercel), and the build status badge above + the GitHub mobile app
+> show green/red without opening a laptop. Setup: **`docs/PHONE-WORKFLOW.md`**.
+> Where each platform stands + how to run it: `docs/SEE-WHERE-WE-ARE.md`.
 
 ## Target platforms
 
