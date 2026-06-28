@@ -26,7 +26,7 @@ difference is a thin per-platform adapter + each store's pipeline.
 | **M5** | Wire the data | both | Inject Supabase URL + anon key; `SupabaseBackendClient` / `SupabaseProjectStore` / the Edge-Function clients. |
 | **M6** | Real assets | both | Drop-in path built: `FurniturePrefabLibrary` (asset; id→prefab) auto-loads into `StagedSceneRenderer.PrefabMap` — assign real models, no code change. `SpatialPanelBuilder` renders the design-system "Spatial Glass" panel from `DesignTokens` at runtime. Remaining is authoring the actual art (furniture models, full card prefabs, overlay label visuals). |
 | **M7** | Capture + design surfaces | both + web | On-device room scan: `RoomScanController` → `WallScanBuilder` (vertical planes → editable `BuildingModel`, `ar_scan`), complementing the CubiCasa/Matterport importers + RoomPlan. The **PC/web design surface** (`web/app/design`) draws walls + stages furniture and writes the locked payload (`docs/PROJECT-PAYLOAD-CONTRACT.md`). |
-| **M8** | Productionization | all | Auth built: `SupabaseAuthClient` (GoTrue REST — password / magic-link / refresh) + `RealEstateApp.SignInWithPasswordAsync` propagates the token to every backend; web design surface uses magic-link. Consent built: pure `ConsentLedger`/`ConsentGate`/`OnboardingFlow` (tested) + `ConsentService` (PlayerPrefs) gating capture in `SceneAppActions`. Remaining: the onboarding/consent **UI screens**, settings, telemetry, per-user rate limiting. |
+| **M8** | Productionization | all | Auth: `SupabaseAuthClient` (GoTrue REST) + `RealEstateApp.SignInWithPasswordAsync`; web uses magic-link. Consent: pure `ConsentLedger`/`ConsentGate`/`OnboardingFlow` (tested) + `ConsentService` (PlayerPrefs) gating capture in `SceneAppActions`. Onboarding: `OnboardingController` drives the flow and raises per-step events for the view. Settings + telemetry: pure `AppSettings` + consent-gated `Telemetry` (tested) with `SettingsService`/`TelemetryService` (PlayerPrefs + console sink, swappable). Remaining: the onboarding/settings **panel visuals**, platform STT/TTS hookup, per-user rate limiting. |
 | **M9** | Store submission | both | See below. |
 
 ## Store / compliance
@@ -51,7 +51,9 @@ Ship a focused first release, then expand. **MVP (realtor + renovation client):*
    (the Microsoft-Layout differentiator).
 5. **Before/after renovation** incl. the wall-removal portal.
 
-**Fast-follow:** voice agent · shared co-located sessions · plant ID + landscape
+**Fast-follow:** voice agent (pipeline wired — `VoiceCommandController`:
+transcript → `EdgeFunctionVoiceAgent` → `ActionDispatcher` → action; add
+platform STT/TTS) · shared co-located sessions · plant ID + landscape
 calculators · builder/MEP overlays · property data (comps/parcels/risk).
 
 This MVP is demoable, valuable to both audiences, and exercises every core

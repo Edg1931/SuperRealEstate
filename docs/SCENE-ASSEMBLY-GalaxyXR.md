@@ -67,6 +67,10 @@ slots):
 | **App** | `ARCore.XrSessionBootstrap` | `autoDetect = true`; `platform = AndroidXrHeadset`; add **FeatureBindings** (e.g. `WallRemovalPortal` → the portal objects, `GazeUi` → the menu) |
 | **Renderers/Staged** | `ARRender.StagedSceneRenderer` | (optional) assign a `FurniturePrefabLibrary` asset (Create → SuperRealEstate → Furniture Prefab Library; map vendor/asset ids → real prefabs) — it auto-loads into `PrefabMap` on Awake, no code change |
 | **App** | `ARCore.ConsentService` | persists app-level consents (camera/scan/etc.) to PlayerPrefs; the onboarding consent screen calls `Grant`/`Deny`; `RealEstateApp` injects it into `SceneAppActions` to gate capture. Drag into `RealEstateApp.consentService` |
+| **App** | `ARCore.VoiceCommandController` | drag into `RealEstateApp.voiceCommandController`; set `RealEstateApp.targetPlatform` to your device. Feed recognized speech to `Submit(transcript)` and speak `OnReply` with platform TTS; `OnActionBlocked`/`OnError` for fallbacks |
+| **App** | `ARCore.SettingsService` | units/quality/voice/analytics/UI-scale, persisted to PlayerPrefs; settings UI binds `OnChanged` and calls the setters |
+| **App** | `ARCore.TelemetryService` | drag `ConsentService` + `SettingsService` in; only emits when Analytics consent AND opt-in are both on. `Track("event")` from feature code |
+| **App** | `ARCore.OnboardingController` | drag `ConsentService` + the `RealEstateApp` in; bind `OnStep`/`OnStatus`/`OnCompleted` to your onboarding panels (build them with `SpatialPanelBuilder`); buttons call `Next`/`GrantCamera`/`SignIn`/`SkipSignIn` |
 | **Renderers/Portal** | `ARRender.WallPortalRenderer` | (optional) set `stencilMaterial` (stencil shader) + `opaqueMaterial`; add revealed-room materials to `RevealedCaptureMaterials` by capture id later. `RealEstateApp` injects this into `SceneAppActions` so a "remove wall" command opens a portal |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
 | **Renderers/Property** | `ARRender.PropertyOverlayRenderer` | — |

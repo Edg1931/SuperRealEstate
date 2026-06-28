@@ -1,12 +1,16 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using SuperRealEstate.App;
 using SuperRealEstate.ARRender;
 using SuperRealEstate.CollaborationBackend;
 using SuperRealEstate.Insights;
+using SuperRealEstate.Platform;
 using SuperRealEstate.Projects;
 using SuperRealEstate.ProjectsBackend;
+using SuperRealEstate.RoomMeasure;
 using SuperRealEstate.Services;
+using SuperRealEstate.Voice;
 
 namespace SuperRealEstate.ARCore
 {
@@ -44,6 +48,12 @@ namespace SuperRealEstate.ARCore
         [Header("Shared sessions (optional)")]
         [Tooltip("Polls + broadcasts shared-session edits to every participant's device.")]
         [SerializeField] private SharedSessionSync sharedSessionSync;
+
+        [Header("Voice (optional)")]
+        [Tooltip("Voice-agent pipeline: transcript → agent → action.")]
+        [SerializeField] private VoiceCommandController voiceCommandController;
+        [Tooltip("Device profile used to feature-gate voice actions. Match XrSessionBootstrap.")]
+        [SerializeField] private XrPlatform targetPlatform = XrPlatform.AndroidXrHeadset;
 
         [Header("Auth + consent (optional)")]
         [Tooltip("Gates capture (camera/scan) behind the user's granted consents.")]
@@ -117,6 +127,31 @@ namespace SuperRealEstate.ARCore
 
             if (wallPortalRenderer != null)
                 sceneActions.ConfigureRenovation(wallPortalRenderer);
+
+            ConfigureVoice(frameProvider);
+        }
+
+        /// <summary>
+        /// Wire the voice pipeline: the voice-agent Edge Function + a dispatcher
+        /// over <see cref="SceneAppActions"/>, feature-gated for the target device.
+        /// Speech-to-text/text-to-speech are platform concerns — feed a transcript
+        /// to <see cref="VoiceCommandController.Submit"/> and speak <c>OnReply</c>.
+        /// </summary>
+        private void ConfigureVoice(System.Func<byte[]> frameProvider)
+        {
+            if (voiceCommandController == null || sceneActions == null || string.IsNullOrEmpty(supabaseUrl))
+                return;
+
+            var agent = new EdgeFunctionVoiceAgent(supabaseUrl, supabaseAnonKey);
+            var dispatcher = new ActionDispatcher(sceneActions);
+            XrCapabilities caps = XrCapabilities.For(targetPlatform);
+
+            voiceCommandController.Configure(
+                agent, dispatcher, caps,
+                frameProvider,
+                () => sceneActions.LastMeasurements,
+                location: null,
+                consent: consentService);
         }
 
         /// <summary>After the user signs in, propagate the token so writes pass RLS.</summary>

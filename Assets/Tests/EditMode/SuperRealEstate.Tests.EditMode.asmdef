@@ -17,6 +17,7 @@
         "SuperRealEstate.Collaboration",
         "SuperRealEstate.CollaborationBackend",
         "SuperRealEstate.Onboarding",
+        "SuperRealEstate.AppCore",
         "SuperRealEstate.Construction",
         "SuperRealEstate.PropertyData",
         "SuperRealEstate.Projects",

@@ -20,7 +20,9 @@
         "SuperRealEstate.App",
         "SuperRealEstate.Insights",
         "SuperRealEstate.Landscape",
-        "SuperRealEstate.Onboarding"
+        "SuperRealEstate.Onboarding",
+        "SuperRealEstate.Voice",
+        "SuperRealEstate.AppCore"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

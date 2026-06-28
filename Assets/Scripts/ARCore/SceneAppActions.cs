@@ -70,6 +70,9 @@ namespace SuperRealEstate.ARCore
         // Last successful measurement, so EstimateMaterial can reuse the floor area.
         private RoomMeasurements? _lastMeasurements;
 
+        /// <summary>The most recent room measurement, if any (for the voice context).</summary>
+        public RoomMeasurements? LastMeasurements => _lastMeasurements;
+
         /// <summary>
         /// Inject the optional analysis collaborators. Wired by the bootstrap /
         /// camera-capture layer once the Supabase config and AR camera are ready.
