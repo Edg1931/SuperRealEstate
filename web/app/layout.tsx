@@ -1,9 +1,17 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "SuperRealEstate — Web Companion",
-  description: "Browse the catalog and view saved rooms and estimates from the AR app.",
+  title: "SuperRealEstate",
+  description:
+    "Web companion for the SuperRealEstate AR app — browse the finish catalog and view saved rooms, estimates, and renovation projects from the same Supabase backend.",
+};
+
+// Next 14+ viewport API (not the deprecated metadata.viewport).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0e1116",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

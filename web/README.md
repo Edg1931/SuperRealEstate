@@ -64,12 +64,25 @@ to scope rows to you. The reusable auth hook lives in `lib/useAuth.ts`.
 ## Deploy to Vercel
 
 1. Push this repo to GitHub (already your remote).
-2. In Vercel → **New Project** → import the repo.
-3. Set **Root Directory = `web`** (the app isn't at the repo root).
-4. Add **Environment Variables** (Production + Preview):
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. Deploy. (Or with the CLI: `cd web && vercel` then `vercel --prod`.)
+2. In Vercel → **New Project** → **Import** the repo.
+3. Set **Root Directory = `web`** (the app isn't at the repo root). Vercel then
+   **auto-detects Next.js** as the framework preset — leave the build/output/
+   install commands at their defaults (this app's `web/vercel.json` already
+   pins `framework: nextjs` and the standard commands for determinism).
+4. Add **Environment Variables** (apply to Production **and** Preview):
+   - `NEXT_PUBLIC_SUPABASE_URL` — Supabase → Project → **Settings → API → Project URL**
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — same page, **Project API keys → `anon` / `public`**
+
+   These are the only env vars needed. The Anthropic key never goes here
+   (see below). Until both are set, every page renders an inline
+   "Supabase isn’t configured" banner instead of failing silently.
+5. **Deploy.** (Or with the CLI: `cd web && vercel` then `vercel --prod`.)
+
+> **Supabase prerequisites:** the linked project must have the migrations
+> applied. For the public `/catalog` page to load without sign-in, enable
+> public read via `supabase/migrations/0006_public_catalog_read.sql` and seed
+> the catalog with `supabase/seed.sql`. Sign-in-gated pages (`/design`
+> publish, `/projects`) rely on the RLS-protected tables listed above.
 
 ## Where the Anthropic API key goes
 

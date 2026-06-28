@@ -1,6 +1,12 @@
+import EnvNotice from "./_components/EnvNotice";
+import { isSupabaseConfigured } from "@/lib/supabase";
+
 export default function Home() {
+  const configured = isSupabaseConfigured();
   return (
     <main>
+      {!configured && <EnvNotice />}
+
       <p className="subtle">
         The companion to the AR app. It reads the same Supabase backend, so what
         an agent captures on a headset shows up here on the web — and what you

@@ -54,6 +54,14 @@ header.site .tag { color: var(--on-surface-muted); font-size: 13px; }
 nav.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 20px; }
 nav.tiles .card:hover { border-color: var(--accent); }
 
+/* Env-not-configured banner (shown when NEXT_PUBLIC_SUPABASE_* are unset). */
+.env-notice { border-color: rgba(224, 168, 79, 0.5); margin-bottom: 16px; }
+.env-notice h3 { color: var(--caution); }
+.env-notice code {
+  background: rgba(0, 0, 0, 0.3); border-radius: 5px;
+  padding: 1px 5px; font-size: 12px;
+}
+
 /* ---------------- Design surface (/design) ---------------- */
 .design-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; margin-top: 16px; }
 @media (max-width: 880px) { .design-layout { grid-template-columns: 1fr; } }
