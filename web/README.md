@@ -24,6 +24,35 @@ For the public catalog page to load without sign-in, apply the catalog read
 policy: `supabase/migrations/0006_public_catalog_read.sql` (and seed the catalog
 via `supabase/seed.sql`).
 
+## Design surface (`/design`)
+
+A top-down plan authoring tool (Microsoft-Layout-style). On a PC or phone you:
+
+- **Draw walls** — click to drop a start point, click again to finish a segment
+  (snaps to a 0.25 m grid).
+- **Place furniture** — pick a vendor catalog item (loaded from
+  `vendor_catalog_items`) or a generic labelled box, then click on the canvas;
+  select a placed item to rotate (yaw) and scale.
+- **Preview the payload** — a live JSON panel shows the exact bundle
+  (`{ geometry, placements, edits }`), with **Copy JSON** / **Download .json**.
+- **Publish** — writes the *locked* project payload the AR app reads.
+
+Publishing **requires sign-in** (Supabase Auth magic link) because every table is
+RLS-protected (`owner_id = auth.uid()`). The relevant migrations must be applied:
+`building_models`, `staging_layouts`, `staging_placements`, `renovation_plans`,
+`renovation_projects`, and `vendors` / `vendor_catalog_items`.
+
+On publish, rows are inserted in this order, threading the returned ids:
+`building_models` → `staging_layouts` → `staging_placements`
+(→ `renovation_plans` only if there are edits) → `renovation_projects`
+(`origin = manual_desktop`, `status = ready_for_ar`). Furniture is written as
+**blueprint-authored** placements (`plan_x` / `plan_y` / `plan_yaw_deg`, `scale`,
+`hasPlan = true`); `pos_*` are left at 0. Geometry conforms to the
+`BuildingModelParser` contract (plan-view meters, x = east, y = north).
+
+The pure serialization lives in `lib/design.ts` and reuses the payload types in
+`lib/projectPayload.ts` — keep both in sync with the C# `ProjectPayloadParser`.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub (already your remote).

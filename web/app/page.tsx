@@ -12,6 +12,10 @@ export default function Home() {
           <h3>Materials &amp; finishes →</h3>
           <div className="meta">Browse the finish catalog with brands, colors, and pricing.</div>
         </a>
+        <a className="card" href="/design">
+          <h3>Design surface →</h3>
+          <div className="meta">Draw a top-down plan (walls + furniture) and publish it as the locked project the AR app reads. <span className="pill">publish requires sign-in</span></div>
+        </a>
         <div className="card">
           <h3>Saved rooms &amp; estimates</h3>
           <div className="meta">Measurements + cost estimates from walkthroughs. <span className="pill">requires sign-in</span></div>
