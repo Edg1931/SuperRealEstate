@@ -55,6 +55,10 @@ namespace SuperRealEstate.CollaborationBackend
 
         public SharedSession Current { get; private set; }
 
+        /// <summary>This device's signed-in user id (from the JWT), or null. Useful
+        /// for skipping your own presence avatar.</summary>
+        public string UserId => _userId;
+
         /// <summary>Set after sign-in so writes pass RLS; also resolves the user id.</summary>
         public void SetAccessToken(string token)
         {
