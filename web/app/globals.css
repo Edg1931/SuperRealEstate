@@ -151,3 +151,22 @@ nav.tiles .card:hover { border-color: var(--accent); }
 .design-publish { margin-top: 20px; }
 .design-success { margin-top: 12px; border-color: rgba(91,191,138,0.4); }
 .design-error { margin-top: 12px; border-color: rgba(224,168,79,0.5); }
+
+/* ---------------- My projects (/projects) ---------------- */
+/* Status-pill colour variants (additive; base .pill stays neutral). */
+.pill-positive { background: rgba(91,191,138,0.18); color: var(--positive); }
+.pill-accent   { background: rgba(79,168,224,0.18); color: var(--accent); }
+.pill-muted    { background: rgba(255,255,255,0.08); color: var(--on-surface-muted); }
+.pill-subtle   { background: rgba(255,255,255,0.05); color: var(--on-surface-muted); opacity: 0.8; }
+
+.projects-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin: 4px 0 16px;
+}
+
+.project-card-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px;
+}
+.project-card-head h3 { margin: 0; }
+.project-artifacts { display: flex; flex-wrap: wrap; gap: 6px; }

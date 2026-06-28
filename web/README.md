@@ -53,6 +53,14 @@ On publish, rows are inserted in this order, threading the returned ids:
 The pure serialization lives in `lib/design.ts` and reuses the payload types in
 `lib/projectPayload.ts` — keep both in sync with the C# `ProjectPayloadParser`.
 
+## My projects (`/projects`)
+
+A signed-in account page listing your `renovation_projects` (newest first), each
+card showing status (colour-hinted pill), kind + origin, created date, and which
+design artifacts are attached (`model` / `staging` / `plan`). It **requires
+sign-in** (Supabase Auth magic link) and relies on RLS (`owner_id = auth.uid()`)
+to scope rows to you. The reusable auth hook lives in `lib/useAuth.ts`.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub (already your remote).

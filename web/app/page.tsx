@@ -16,6 +16,10 @@ export default function Home() {
           <h3>Design surface →</h3>
           <div className="meta">Draw a top-down plan (walls + furniture) and publish it as the locked project the AR app reads. <span className="pill">publish requires sign-in</span></div>
         </a>
+        <a className="card" href="/projects">
+          <h3>My projects →</h3>
+          <div className="meta">Browse the renovation projects you’ve published, with status and attached design artifacts. <span className="pill">requires sign-in</span></div>
+        </a>
         <div className="card">
           <h3>Saved rooms &amp; estimates</h3>
           <div className="meta">Measurements + cost estimates from walkthroughs. <span className="pill">requires sign-in</span></div>
