@@ -26,15 +26,18 @@ namespace SuperRealEstate.ARRender
         {
             var root = new GameObject(name);
 
+            // Palette adapted to the current room luminance (denser in bright rooms).
+            AdaptedPalette palette = AmbientLight.Palette;
+
             // Faint rim slightly larger and behind, for separation on passthrough.
             float rim = DesignTokens.SpaceXs;
             Quad("Edge", root.transform,
                 widthM + rim * 2f, heightM + rim * 2f, 0.0005f,
-                new Color(DesignTokens.OnSurfaceMuted.r, DesignTokens.OnSurfaceMuted.g,
-                          DesignTokens.OnSurfaceMuted.b, DesignTokens.EdgeHalo));
+                new Color(palette.OnSurfaceMuted.r, palette.OnSurfaceMuted.g,
+                          palette.OnSurfaceMuted.b, DesignTokens.EdgeHalo));
 
             // Frosted surface face.
-            GameObject face = Quad("Surface", root.transform, widthM, heightM, 0f, DesignTokens.Surface);
+            GameObject face = Quad("Surface", root.transform, widthM, heightM, 0f, palette.Surface);
             // Nudge the face just in front of the rim.
             face.transform.localPosition = new Vector3(0f, 0f, -0.0006f);
 

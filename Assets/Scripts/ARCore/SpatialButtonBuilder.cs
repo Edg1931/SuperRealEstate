@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using SuperRealEstate.ARRender;
 using SuperRealEstate.UI;
@@ -23,7 +24,7 @@ namespace SuperRealEstate.ARCore
         /// </summary>
         public static GameObject Build(
             string id, string label, float widthM, float heightM,
-            Action onSelect, Font font = null, Color? accent = null)
+            Action onSelect, TMP_FontAsset font = null, Color? accent = null)
         {
             GameObject root = SpatialPanelBuilder.Build(widthM, heightM, $"Button_{id}");
 
@@ -46,29 +47,15 @@ namespace SuperRealEstate.ARCore
             var barRenderer = bar != null ? bar.GetComponentInChildren<Renderer>() : null;
             feedback.SetHighlight(barRenderer, accentColor, Color.Lerp(accentColor, DesignTokens.OnSurface, 0.4f));
 
-            if (font != null && !string.IsNullOrEmpty(label))
-                AddLabel(root.transform, label, font, widthM, heightM);
+            if (!string.IsNullOrEmpty(label))
+            {
+                TextMeshPro tmp = SpatialLabel.Build(
+                    root.transform, label, font,
+                    DesignTokens.TypeBodyDeg, SpatialComfort.DepthSweetM, AmbientLight.Palette.OnSurface);
+                tmp.transform.localPosition = new Vector3(0f, 0f, -0.003f);
+            }
 
             return root;
-        }
-
-        private static void AddLabel(Transform parent, string text, Font font, float widthM, float heightM)
-        {
-            var go = new GameObject("Label");
-            go.transform.SetParent(parent, worldPositionStays: false);
-            go.transform.localPosition = new Vector3(DesignTokens.SpaceS, 0f, -0.003f);
-
-            var tm = go.AddComponent<TextMesh>();
-            tm.text = text;
-            tm.font = font;
-            tm.fontSize = 64;                 // high res; scaled down by characterSize
-            tm.characterSize = heightM * 0.018f; // tune in-editor for the panel height
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.color = DesignTokens.OnSurface;
-
-            var mr = go.GetComponent<MeshRenderer>();
-            if (mr != null && font.material != null) mr.sharedMaterial = font.material;
         }
     }
 }

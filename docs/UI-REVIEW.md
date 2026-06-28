@@ -70,15 +70,27 @@ closes the biggest gaps so navigation reads the way the system intends.
   Vision Pro — the edge halo + frosted fill help; consider the ambient-luminance
   palette adapt (design-system "adapts to ambient luminance") as a follow-up.
 
-## Still to do (beyond this pass)
+## Done in the follow-up pass
 
-- **Crisp text:** `TextMesh` is a legacy, aliased placeholder. Move to **TextMeshPro**
-  (SDF) for premium edges, and size from the angular type scale, not a fixed
-  `characterSize`. (Kept TextMesh for now to avoid a package dependency in code.)
+- **Crisp text → TextMeshPro.** `SpatialLabel` builds SDF world-text sized from
+  the angular type scale (cap-height in degrees → meters at depth), replacing the
+  aliased `TextMesh`. Assign a `TMP_FontAsset` (or use the TMP default after
+  importing TMP Essentials). Buttons, titles, and settings rows all use it.
+- **Ambient-luminance adapt.** Pure `PaletteAdapt` (tested) densifies the panel
+  fill in bright rooms and lightens it in dim ones, easing text luminance to avoid
+  bloom; `AmbientLightProbe` reads AR light estimation and feeds `AmbientLight`,
+  which `SpatialPanelBuilder` reads so new panels match the room.
+- **Radial tool menu view.** `RadialToolMenuView` builds the wrist palette from the
+  `RadialToolMenu` model on an arc, dims tools unavailable on the device (via
+  `ActionDispatcher.ResolveTool`), billboards + seats in the comfort zone, and
+  raises `OnToolSelected` / `OnToolBlocked`.
+
+## Still to do (beyond these passes)
+
 - **Real background blur:** `PanelBlur` is a token but the placeholder material is
   unlit/transparent, not blurred. Author a "Spatial Glass" shader (kawase blur +
   edge halo) for the true frosted look.
-- **Radial tool menu view:** `RadialToolMenu` (model) has no runtime view yet —
-  build it with `SpatialButtonBuilder` arranged on an arc, wrist-anchored.
-- **Reduce Motion / ambient-luminance** adaptation hooks (tokens exist; wire them).
+- **Reduce Motion** hook (token exists; collapse motion durations when set).
 - **Haptics/audio** confirm on pinch-commit (Galaxy XR controllers / hand pinch).
+- **Per-font TMP calibration:** tune `SpatialLabel.CapUnitsAtBaseFont` for your
+  chosen font so cap heights match the angular tokens exactly.

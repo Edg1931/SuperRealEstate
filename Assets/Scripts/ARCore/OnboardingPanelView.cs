@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using SuperRealEstate.ARRender;
 using SuperRealEstate.Onboarding;
@@ -24,8 +25,8 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private OnboardingController controller;
         [Tooltip("Where the panel floats. Defaults to this transform.")]
         [SerializeField] private Transform anchor;
-        [Tooltip("Font for button/title text (optional).")]
-        [SerializeField] private Font font;
+        [Tooltip("TextMeshPro font for button/title text (optional; uses TMP default).")]
+        [SerializeField] private TMP_FontAsset font;
 
         [SerializeField] private float panelWidthM = 0.62f;
         [SerializeField] private float buttonWidthM = 0.54f;
@@ -120,9 +121,11 @@ namespace SuperRealEstate.ARCore
 
             float top = height * 0.5f - pad;
 
-            // Title (label-only mini panel, no collider).
-            if (font != null)
-                AddTitle(_current.transform, title, top - titleH * 0.5f);
+            // Title (TMP label; uses the TMP default font when none assigned).
+            TextMeshPro titleLabel = SpatialLabel.Build(
+                _current.transform, title, font,
+                DesignTokens.TypeTitleDeg, SpatialComfort.DepthSweetM, AmbientLight.Palette.OnSurface);
+            titleLabel.transform.localPosition = new Vector3(0f, top - titleH * 0.5f, -0.003f);
 
             float y = top - titleH - Gap - buttonHeightM * 0.5f;
             foreach (ButtonSpec b in buttons)
@@ -132,25 +135,6 @@ namespace SuperRealEstate.ARCore
                 btn.transform.localPosition = new Vector3(0f, y, -0.004f);
                 y -= buttonHeightM + Gap;
             }
-        }
-
-        private void AddTitle(Transform parent, string text, float localY)
-        {
-            var go = new GameObject("Title");
-            go.transform.SetParent(parent, worldPositionStays: false);
-            go.transform.localPosition = new Vector3(0f, localY, -0.003f);
-
-            var tm = go.AddComponent<TextMesh>();
-            tm.text = text;
-            tm.font = font;
-            tm.fontSize = 64;
-            tm.characterSize = buttonHeightM * 0.022f;
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.color = DesignTokens.OnSurface;
-
-            var mr = go.GetComponent<MeshRenderer>();
-            if (mr != null && font.material != null) mr.sharedMaterial = font.material;
         }
 
         private void Clear()

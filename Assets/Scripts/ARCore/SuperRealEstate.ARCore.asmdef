@@ -5,6 +5,7 @@
         "Unity.XR.ARFoundation",
         "Unity.XR.CoreUtils",
         "Unity.InputSystem",
+        "Unity.TextMeshPro",
         "SuperRealEstate.RoomMeasure",
         "SuperRealEstate.MaterialCost",
         "SuperRealEstate.UI",

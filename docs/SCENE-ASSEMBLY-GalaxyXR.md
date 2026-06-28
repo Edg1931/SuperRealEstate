@@ -72,7 +72,10 @@ slots):
 | **App** | `ARCore.TelemetryService` | drag `ConsentService` + `SettingsService` in; only emits when Analytics consent AND opt-in are both on. `Track("event")` from feature code |
 | **App** | `ARCore.OnboardingController` | drag `ConsentService` + the `RealEstateApp` in; bind `OnStep`/`OnStatus`/`OnCompleted` to the view below; buttons call `Next`/`GrantCamera`/`SignIn`/`SkipSignIn` |
 | **UI/Onboarding** | `ARCore.OnboardingPanelView` | drag the `OnboardingController` in; assign a `Font` to label buttons (optional); set `anchor` to where the panel floats. Builds a panel per step with buttons wired to the controller (procedural, swap for prefabs later) |
-| **UI/Settings** | `ARCore.SettingsPanelView` | drag the `SettingsService` in; assign a `Font`; rows toggle units/quality/voice/analytics and refresh live from `OnChanged` |
+| **UI/Settings** | `ARCore.SettingsPanelView` | drag the `SettingsService` in; assign a `TMP_FontAsset`; rows toggle units/quality/voice/analytics and refresh live from `OnChanged` |
+| **UI/Tools** | `ARCore.RadialToolMenuView` | the core nav palette; assign a `TMP_FontAsset`, set `targetPlatform`; bind `OnToolSelected` → your tool router and `OnToolBlocked` → the HUD. Summon with `Show()`/`Toggle()` (e.g. a wrist/palm gesture). Unavailable tools auto-dim per device |
+| **Main Camera** (under XR Origin) | `ARCore.AmbientLightProbe` | enable **Light Estimation** on the AR Camera Manager; feeds room luminance so panels densify in bright rooms / lighten in dim ones. No refs to set |
+| **(note)** | TextMeshPro | one-time: **Window → TextMeshPro → Import TMP Essential Resources** so default-font labels render |
 | **Renderers/Portal** | `ARRender.WallPortalRenderer` | (optional) set `stencilMaterial` (stencil shader) + `opaqueMaterial`; add revealed-room materials to `RevealedCaptureMaterials` by capture id later. `RealEstateApp` injects this into `SceneAppActions` so a "remove wall" command opens a portal |
 | **Renderers/Systems** | `ARRender.SystemsOverlayRenderer` | — |
 | **Renderers/Property** | `ARRender.PropertyOverlayRenderer` | — |

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using SuperRealEstate.AppCore;
 using SuperRealEstate.ARRender;
@@ -19,8 +20,8 @@ namespace SuperRealEstate.ARCore
     {
         [SerializeField] private SettingsService settings;
         [SerializeField] private Transform anchor;
-        [Tooltip("Font for row text (optional; rows still build without it).")]
-        [SerializeField] private Font font;
+        [Tooltip("TextMeshPro font for row text (optional; uses TMP default).")]
+        [SerializeField] private TMP_FontAsset font;
 
         [SerializeField] private float panelWidthM = 0.7f;
         [SerializeField] private float rowWidthM = 0.62f;
