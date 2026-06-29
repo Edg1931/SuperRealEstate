@@ -97,6 +97,7 @@ namespace SuperRealEstate.ARRender
             float thickness = wall.ThicknessM > 0f ? wall.ThicknessM : wallThicknessM;
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            StripCollider(go); // staged geometry must not intercept the gaze raycast
             go.name = string.IsNullOrEmpty(wall.Id) ? "Wall" : "Wall_" + wall.Id;
             go.transform.SetParent(_root, false);
 
@@ -136,6 +137,7 @@ namespace SuperRealEstate.ARRender
             {
                 // Placeholder: a scaled cube sitting on the floor (size 0.6^3 * Scale).
                 go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                StripCollider(go);
                 float size = placeholderSizeM * scale;
                 go.transform.localScale = new Vector3(size, size, size);
                 ApplyColor(go, new Color(0.31f, 0.66f, 0.88f, 1f)); // accent
@@ -195,7 +197,21 @@ namespace SuperRealEstate.ARRender
         {
             if (parent == null) return;
             for (int i = parent.childCount - 1; i >= 0; i--)
-                DestroyImmediate(parent.GetChild(i).gameObject);
+            {
+                GameObject child = parent.GetChild(i).gameObject;
+                if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
+            }
+        }
+
+        // Placeholder primitives carry a Collider that would intercept the gaze
+        // raycast meant for UI; remove it so only GazeTargets are hit.
+        private static void StripCollider(GameObject go)
+        {
+            var c = go != null ? go.GetComponent<Collider>() : null;
+            if (c != null)
+            {
+                if (Application.isPlaying) Destroy(c); else DestroyImmediate(c);
+            }
         }
 
         // Sets a primitive's color on an instance material so it is independent

@@ -10,8 +10,12 @@ using SuperRealEstate.Insights;
 using SuperRealEstate.Landscape;
 using SuperRealEstate.MaterialCost;
 using SuperRealEstate.Onboarding;
+using SuperRealEstate.Overlays;
+using SuperRealEstate.Projects;
+using SuperRealEstate.PropertyData;
 using SuperRealEstate.Renovation;
 using SuperRealEstate.RoomMeasure;
+using SuperRealEstate.Staging;
 
 namespace SuperRealEstate.ARCore
 {
@@ -61,6 +65,15 @@ namespace SuperRealEstate.ARCore
         // Optional consent gate — capture is blocked until the user has agreed.
         private ConsentService _consent;
 
+        // Property data (comps) + the overlay renderer + a location source.
+        private IPropertyDataProvider _propertyData;
+        private IPropertyOverlayRenderer _overlayRenderer;
+        private Func<(double? lat, double? lng)> _location;
+
+        // Staging: an in-scene renderer + the running set of staged items.
+        private IStagedSceneRenderer _stagedRenderer;
+        private readonly List<Placement> _stagedItems = new List<Placement>();
+
         // Renovation: portal renderer + the model whose walls can be "removed".
         private IPortalRenderer _portalRenderer;
         private BuildingModel _buildingModel;
@@ -109,6 +122,23 @@ namespace SuperRealEstate.ARCore
         /// null, capture is ungated (e.g. tests / pre-consent dev scenes).
         /// </summary>
         public void SetConsent(ConsentService consent) => _consent = consent;
+
+        /// <summary>
+        /// Inject the property-data provider + overlay renderer + a location source
+        /// so <see cref="ShowCompsAsync"/> can pull and render comparable sales.
+        /// </summary>
+        public void ConfigureProperty(
+            IPropertyDataProvider propertyData,
+            IPropertyOverlayRenderer overlayRenderer,
+            Func<(double?, double?)> location)
+        {
+            _propertyData = propertyData;
+            _overlayRenderer = overlayRenderer;
+            _location = location;
+        }
+
+        /// <summary>Inject the staged-scene renderer so <see cref="StageFurnitureAsync"/> can place items.</summary>
+        public void ConfigureStaging(IStagedSceneRenderer stagedRenderer) => _stagedRenderer = stagedRenderer;
 
         /// <summary>
         /// Set the active building model whose walls can be virtually removed.
@@ -417,17 +447,91 @@ namespace SuperRealEstate.ARCore
         /// <inheritdoc />
         public Task StageFurnitureAsync(string item, CancellationToken ct = default)
         {
-            // Placeholder — staging layer not wired here yet.
-            OnInfo.Invoke($"Staging {item}… (preview coming soon)");
+            if (_stagedRenderer == null)
+            {
+                OnInfo.Invoke("staging isn't set up");
+                return Task.CompletedTask;
+            }
+
+            // Place the item ~1.5 m ahead on the floor, accumulating into the scene.
+            Vector3 pos = InFrontOnFloor(1.5f);
+            _stagedItems.Add(new Placement
+            {
+                Id = $"stage-{_stagedItems.Count}",
+                FurnitureAssetId = string.IsNullOrWhiteSpace(item) ? "item" : item.Trim(),
+                Position = pos,
+                Scale = 1f,
+            });
+            _stagedRenderer.Render(new StagedScene { Placements = new List<Placement>(_stagedItems) });
+
+            OnInfo.Invoke($"Staged {(string.IsNullOrWhiteSpace(item) ? "an item" : item)}.");
             return Task.CompletedTask;
         }
 
-        /// <inheritdoc />
-        public Task ShowCompsAsync(CancellationToken ct = default)
+        /// <summary>Clear everything staged via voice/tool.</summary>
+        public void ClearStaging()
         {
-            // Placeholder — comps layer not wired here yet.
-            OnInfo.Invoke("Pulling up comparable sales… (preview coming soon)");
-            return Task.CompletedTask;
+            _stagedItems.Clear();
+            _stagedRenderer?.Render(new StagedScene());
+        }
+
+        /// <inheritdoc />
+        public async Task ShowCompsAsync(CancellationToken ct = default)
+        {
+            if (_propertyData == null || _overlayRenderer == null)
+            {
+                OnInfo.Invoke("comparable sales aren't available right now");
+                return;
+            }
+            if (!ConsentOk(CaptureAction.ShowComps))
+                return;
+
+            double? lat = null, lng = null;
+            if (_location != null) (lat, lng) = _location();
+            if (!lat.HasValue || !lng.HasValue)
+            {
+                OnInfo.Invoke("I need your location to pull comparable sales");
+                return;
+            }
+
+            try
+            {
+                IReadOnlyList<Comp> comps = await _propertyData.GetCompsAsync(lat.Value, lng.Value, ct);
+                if (comps == null || comps.Count == 0)
+                {
+                    OnInfo.Invoke("no comparable sales found nearby");
+                    return;
+                }
+
+                IReadOnlyList<OverlayTag> tags = CompsOverlayBuilder.Build(comps);
+                _overlayRenderer.RenderCompTags(tags);
+
+                float median = CompStats.MedianPricePerSqFt(comps);
+                OnInfo.Invoke(median > 0f
+                    ? $"{comps.Count} comparable sales nearby — about ${median:0}/sq ft. (advisory)"
+                    : $"{comps.Count} comparable sales nearby. (advisory)");
+            }
+            catch (OperationCanceledException)
+            {
+                // not an error
+            }
+            catch (Exception e)
+            {
+                OnInfo.Invoke("couldn't pull comparable sales");
+                Debug.LogWarning($"[SceneAppActions] ShowComps failed: {e.Message}");
+            }
+        }
+
+        /// <summary>A point ~<paramref name="distanceM"/> m ahead of the camera, on the floor (y≈0).</summary>
+        private static Vector3 InFrontOnFloor(float distanceM)
+        {
+            Camera cam = Camera.main;
+            if (cam == null) return new Vector3(0f, 0f, distanceM);
+            Vector3 fwd = cam.transform.forward; fwd.y = 0f;
+            if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
+            Vector3 p = cam.transform.position + fwd.normalized * distanceM;
+            p.y = 0f;
+            return p;
         }
 
         // --- helpers ---

@@ -8,6 +8,7 @@ using SuperRealEstate.Insights;
 using SuperRealEstate.Platform;
 using SuperRealEstate.Projects;
 using SuperRealEstate.ProjectsBackend;
+using SuperRealEstate.PropertyData;
 using SuperRealEstate.RoomMeasure;
 using SuperRealEstate.Services;
 using SuperRealEstate.Voice;
@@ -55,6 +56,14 @@ namespace SuperRealEstate.ARCore
         [Tooltip("Device profile used to feature-gate voice actions. Match XrSessionBootstrap.")]
         [SerializeField] private XrPlatform targetPlatform = XrPlatform.AndroidXrHeadset;
 
+        [Header("Property data (optional)")]
+        [Tooltip("Renders comp tags / parcel lines for the property overlays.")]
+        [SerializeField] private PropertyOverlayRenderer propertyOverlayRenderer;
+        [Tooltip("Provide a fixed lat/lng for comps until device GPS is wired.")]
+        [SerializeField] private bool provideTestLocation;
+        [SerializeField] private double testLatitude;
+        [SerializeField] private double testLongitude;
+
         [Header("Auth + consent (optional)")]
         [Tooltip("Gates capture (camera/scan) behind the user's granted consents.")]
         [SerializeField] private ConsentService consentService;
@@ -79,6 +88,11 @@ namespace SuperRealEstate.ARCore
         private EdgeFunctionSceneAnalyzer _sceneAnalyzer;
         private EdgeFunctionPlantIdentifier _plantIdentifier;
         private EdgeFunctionVoiceAgent _voiceAgent;
+        private EdgeFunctionPropertyData _propertyData;
+
+        /// <summary>A fixed lat/lng when <c>provideTestLocation</c> is set, else (null,null).</summary>
+        private (double?, double?) CurrentLocation()
+            => provideTestLocation ? ((double?)testLatitude, (double?)testLongitude) : (null, null);
 
         public bool IsConfigured => ProjectStore != null && stagingController != null && stagedSceneRenderer != null;
 
@@ -132,6 +146,15 @@ namespace SuperRealEstate.ARCore
             if (wallPortalRenderer != null)
                 sceneActions.ConfigureRenovation(wallPortalRenderer);
 
+            if (stagedSceneRenderer != null)
+                sceneActions.ConfigureStaging(stagedSceneRenderer);
+
+            if (!string.IsNullOrEmpty(supabaseUrl) && propertyOverlayRenderer != null)
+            {
+                _propertyData = new EdgeFunctionPropertyData(supabaseUrl, supabaseAnonKey);
+                sceneActions.ConfigureProperty(_propertyData, propertyOverlayRenderer, CurrentLocation);
+            }
+
             ConfigureVoice(frameProvider);
         }
 
@@ -154,7 +177,7 @@ namespace SuperRealEstate.ARCore
                 _voiceAgent, dispatcher, caps,
                 frameProvider,
                 () => sceneActions.LastMeasurements,
-                location: null,
+                location: CurrentLocation,
                 consent: consentService);
         }
 
@@ -168,6 +191,7 @@ namespace SuperRealEstate.ARCore
             _sceneAnalyzer?.SetAccessToken(token);
             _plantIdentifier?.SetAccessToken(token);
             _voiceAgent?.SetAccessToken(token);
+            _propertyData?.SetAccessToken(token);
         }
 
         /// <summary>

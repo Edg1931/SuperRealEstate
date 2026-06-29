@@ -23,6 +23,8 @@
         "SuperRealEstate.Landscape",
         "SuperRealEstate.Onboarding",
         "SuperRealEstate.Voice",
+        "SuperRealEstate.PropertyData",
+        "SuperRealEstate.Overlays",
         "SuperRealEstate.AppCore"
     ],
     "includePlatforms": [],

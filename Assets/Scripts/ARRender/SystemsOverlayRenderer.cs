@@ -69,6 +69,8 @@ namespace SuperRealEstate.ARRender
         private void DrawMarker(OverlayMarker marker)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var col = go.GetComponent<Collider>(); // don't intercept the gaze raycast
+            if (col != null) { if (Application.isPlaying) Destroy(col); else DestroyImmediate(col); }
             go.name = string.IsNullOrEmpty(marker.Label) ? "Fixture" : marker.Label;
             go.transform.SetParent(_root, false);
             go.transform.localPosition = marker.Position;
