@@ -17,6 +17,7 @@ import {
   corsHeaders,
   GuardError,
   readJson,
+  rateLimit,
   requireAuth,
   toResponse,
   validateLatLng,
@@ -136,6 +137,7 @@ Deno.serve(async (req: Request) => {
   }
 
   requireAuth(req);
+  await rateLimit(req, 200);
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {

@@ -15,6 +15,7 @@ import {
   corsHeaders as cors,
   GuardError,
   readJson,
+  rateLimit,
   requireAuth,
   toResponse,
   validateLatLng,
@@ -74,6 +75,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: cors() });
 
   requireAuth(req);
+  await rateLimit(req, 400);
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {

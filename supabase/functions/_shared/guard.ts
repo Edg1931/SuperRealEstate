@@ -62,6 +62,45 @@ export function userIdFromAuth(req: Request): string | null {
   }
 }
 
+// Per-user daily rate limit for paid AI calls. Resolves the user from the JWT
+// (now that the AI clients send it), increments today's counter via the
+// service-role `increment_ai_usage` RPC, and throws GuardError(429) when over.
+// FAIL-OPEN: if there's no user (anon), no service config, or the counter errors,
+// it does NOT block — availability over a hard cap on infra hiccups. Call after
+// requireAuth(). Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected).
+export async function rateLimit(req: Request, maxPerDay: number): Promise<void> {
+  const userId = userIdFromAuth(req);
+  if (!userId) return; // can't attribute (anon key) → skip per-user limit
+
+  const url = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !serviceKey) return; // not configured locally → don't block
+
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/increment_ai_usage`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ p_user: userId, p_limit: maxPerDay }),
+    });
+    if (!res.ok) {
+      console.error(`[rateLimit] counter RPC ${res.status}`);
+      return; // fail open on infra error
+    }
+    const allowed = await res.json().catch(() => true);
+    if (allowed === false) {
+      throw new GuardError(429, "Daily AI request limit reached. Please try again tomorrow.");
+    }
+  } catch (err) {
+    if (err instanceof GuardError) throw err; // the 429 is intentional
+    console.error(`[rateLimit] ${err instanceof Error ? err.message : String(err)}`);
+    // fail open on anything else
+  }
+}
+
 // Reads the request body, rejecting (GuardError 413) if the declared
 // Content-Length or the actual body exceeds maxBytes, and parsing the result as
 // JSON (GuardError 400 on invalid JSON). Returns the parsed value.
