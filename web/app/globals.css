@@ -251,3 +251,62 @@ nav.tiles a.card:hover { border-color: var(--accent); }
 }
 .project-card-head h3 { margin: 0; }
 .project-artifacts { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Project card is a link → whole card is clickable; CTA hint at the bottom. */
+.project-card-link {
+  display: block; color: inherit; text-decoration: none;
+  transition: border-color 0.12s ease;
+}
+.project-card-link:hover { border-color: var(--accent); text-decoration: none; }
+.project-card-link .project-card-head h3 { color: var(--on-surface); }
+.project-card-cta {
+  display: inline-block; margin-top: 10px; font-size: 13px; color: var(--accent);
+}
+
+/* ---------------- Read-only plan view (PlanView component) ---------------- */
+.planview-wrap { width: 100%; }
+.planview-svg {
+  display: block; width: 100%; height: auto; max-width: 100%;
+  border-radius: 10px; background: var(--canvas-bg);
+}
+.planview-bg { fill: var(--plan-bg); stroke: var(--hairline-strong); stroke-width: 1; }
+.planview-grid { stroke: var(--fill-faint); stroke-width: 1; }
+.planview-room { fill: var(--accent-soft); stroke: var(--accent-line); stroke-width: 1; opacity: 0.5; }
+.planview-wall { stroke: var(--accent); stroke-linecap: round; }
+.planview-item-rect { fill: var(--fill-subtle); stroke: var(--on-surface-muted); stroke-width: 1.5; }
+.planview-item-facing { stroke: var(--on-surface-muted); stroke-width: 1.5; }
+.planview-item-label { fill: var(--on-surface); font-size: 11px; pointer-events: none; }
+.planview-empty { margin: 10px 0 0; font-size: 13px; }
+
+/* ---------------- Project detail (/projects/[id]) ---------------- */
+.detail-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px; align-items: start; margin-top: 12px;
+}
+@media (max-width: 880px) { .detail-grid { grid-template-columns: 1fr; } }
+.detail-side { display: flex; flex-direction: column; gap: 14px; }
+
+/* Share-link row: a read-only URL field + copy button. */
+.share-link-row { display: flex; gap: 8px; align-items: stretch; margin-top: 4px; }
+.share-link-input {
+  flex: 1 1 auto; min-width: 0;
+  background: var(--inset-bg); color: var(--on-surface);
+  border: 1px solid var(--hairline-strong); border-radius: 8px;
+  padding: 7px 9px; font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---------------- Public presentation (/p/[token]) ---------------- */
+.present { max-width: 760px; margin: 0 auto; }
+.present-shell { display: flex; flex-direction: column; gap: 16px; }
+.present-head {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 8px 0 2px;
+}
+.present-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.present-kind { align-self: center; }
+.present-plan { padding: 12px; }
+.present-footer {
+  text-align: center; font-size: 13px; margin-top: 8px; padding-top: 8px;
+}
+.present-card { text-align: left; }

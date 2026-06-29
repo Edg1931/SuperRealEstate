@@ -55,7 +55,12 @@ A top-down plan authoring tool (Microsoft-Layout-style). On a PC or phone you:
   select a placed item to rotate (yaw) and scale.
 - **Preview the payload** — a live JSON panel shows the exact bundle
   (`{ geometry, placements, edits }`), with **Copy JSON** / **Download .json**.
-- **Publish** — writes the *locked* project payload the AR app reads.
+- **Name + publish** — enter a **project name** (defaults to "Untitled design"
+  if left blank), then publish the *locked* project payload the AR app reads.
+- **Re-open a saved project** — when you arrive from a project's detail page via
+  *Open in design surface*, the design page reads `sre.reopen.geometry` from
+  `sessionStorage` on mount and loads those walls (replacing the current
+  drawing), then clears the key — best-effort and ignored if absent/malformed.
 
 Publishing **requires sign-in** (Supabase Auth magic link) because every table is
 RLS-protected (`owner_id = auth.uid()`). The relevant migrations must be applied:
@@ -79,10 +84,46 @@ DOM-free helpers in `lib/blueprint.ts`.
 ## My projects (`/projects`)
 
 A signed-in account page listing your `renovation_projects` (newest first), each
-card showing status (colour-hinted pill), kind + origin, created date, and which
-design artifacts are attached (`model` / `staging` / `plan`). It **requires
-sign-in** (Supabase Auth magic link) and relies on RLS (`owner_id = auth.uid()`)
-to scope rows to you. The reusable auth hook lives in `lib/useAuth.ts`.
+card showing status (colour-hinted pill), kind + origin, created date, a
+**shared** pill when a public link is live, and which design artifacts are
+attached (`model` / `staging` / `plan`). Each card links to its **detail page**.
+It **requires sign-in** (Supabase Auth magic link) and relies on RLS
+(`owner_id = auth.uid()`) to scope rows to you. The reusable auth hook lives in
+`lib/useAuth.ts`.
+
+### Project detail (`/projects/[id]`)
+
+A signed-in owner view of one project. It fetches the project row (RLS scopes it
+to the owner), its `building_models.geometry`, its `staging_placements`, and its
+`renovation_plans.edits`, then renders:
+
+- a **read-only plan** via the reusable `<PlanView>` component
+  (`app/_components/PlanView.tsx`) — it draws the building-model geometry
+  (`{ walls, rooms? }`) and any furniture placements to scale (plan meters →
+  screen, y = north up), auto-fitting its own bounds so it never depends on the
+  design page;
+- an **advisory cost estimate** (reuses `estimateFinishCost` from
+  `lib/costEstimate.ts`, pricing the geometry's wall finishes against the
+  `materials` catalog);
+- **Share** — `enable_project_sharing(p_project)` mints/returns a `share_token`
+  and shows the public link `…/p/<token>` with a copy button;
+  `disable_project_sharing(p_project)` clears it and invalidates the link
+  (owner-only RPCs; see `supabase/migrations/0010_project_sharing.sql`);
+- **Open in design surface** — stashes the project's geometry JSON in
+  `sessionStorage` under `sre.reopen.geometry` and navigates to `/design`, which
+  reads the key on mount (via `parseGeometryWalls`), loads those walls, and
+  clears the key.
+
+### Public presentation (`/p/[token]`)
+
+A **no-sign-in** client-facing page (what a buyer opens on their phone). It calls
+the PUBLIC `get_shared_project(p_token)` RPC (a `SECURITY DEFINER` function — the
+unguessable token is the capability, so anon can read exactly one shared project
+and nothing else). On a valid token it shows a polished, chrome-light layout: the
+project name, a large `<PlanView>` (geometry + placements), and an advisory
+finish-cost estimate (materials fetched with the anon client — catalog read is
+public). An invalid/disabled token renders a friendly "This link isn’t available"
+card. Requires migration `supabase/migrations/0010_project_sharing.sql`.
 
 ## Deploy to Vercel
 

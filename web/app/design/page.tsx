@@ -139,6 +139,7 @@ export default function DesignPage() {
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [publishedProjectId, setPublishedProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("");
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -204,6 +205,22 @@ export default function DesignPage() {
       active = false;
       sub.subscription.unsubscribe();
     };
+  }, []);
+
+  // Re-open handoff: if the owner project detail page stashed a geometry under
+  // `sre.reopen.geometry`, load its walls (replacing the current drawing) and
+  // clear the key. Safe + best-effort: ignore an absent/malformed value.
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("sre.reopen.geometry");
+      if (!raw) return;
+      window.sessionStorage.removeItem("sre.reopen.geometry");
+      const json: unknown = JSON.parse(raw);
+      const imported = parseGeometryWalls(json);
+      setWalls(imported);
+    } catch {
+      // Absent / malformed → nothing to load. Existing editor state is untouched.
+    }
   }, []);
 
   const catalogById = useMemo(() => {
@@ -663,7 +680,7 @@ export default function DesignPage() {
         .from("renovation_projects")
         .insert({
           owner_id: uid,
-          name: "Untitled design",
+          name: projectName.trim() || "Untitled design",
           kind: hasEdits ? "renovation" : "empty_staging",
           origin: "manual_desktop",
           status: "ready_for_ar",
@@ -681,7 +698,7 @@ export default function DesignPage() {
     } finally {
       setPublishing(false);
     }
-  }, [bundle, hasEdits]);
+  }, [bundle, hasEdits, projectName]);
 
   // --- Render helpers ---
   const gridLines = useMemo(() => {
@@ -1514,6 +1531,16 @@ export default function DesignPage() {
         {authChecked && userId && !publishedProjectId && (
           <div>
             <p className="meta">Signed in. Ready to publish this design.</p>
+            <label className="design-field">
+              <span>Project name</span>
+              <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Untitled design"
+                aria-label="Project name"
+              />
+            </label>
             <button
               type="button"
               className="tool-btn active"

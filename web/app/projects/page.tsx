@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/useAuth";
 
@@ -12,13 +13,14 @@ interface ProjectRow {
   status: string | null;
   origin: string | null;
   created_at: string | null;
+  share_token: string | null;
   building_model_id: string | null;
   staging_layout_id: string | null;
   renovation_plan_id: string | null;
 }
 
 const SELECT_COLUMNS =
-  "id,name,kind,status,origin,created_at,building_model_id,staging_layout_id,renovation_plan_id";
+  "id,name,kind,status,origin,created_at,share_token,building_model_id,staging_layout_id,renovation_plan_id";
 
 // Map a project status to a pill style variant. Unknown statuses fall back to a
 // neutral pill so we never throw on data we don't recognise.
@@ -194,7 +196,7 @@ export default function ProjectsPage() {
                 if (p.staging_layout_id) artifacts.push("staging ✓");
                 if (p.renovation_plan_id) artifacts.push("plan ✓");
                 return (
-                  <div className="card project-card" key={p.id}>
+                  <Link className="card project-card project-card-link" key={p.id} href={`/projects/${p.id}`}>
                     <div className="project-card-head">
                       <h3>{p.name?.trim() || "Untitled"}</h3>
                       <span className={statusPillClass(p.status)}>
@@ -209,6 +211,7 @@ export default function ProjectsPage() {
                       Created {formatDate(p.created_at)}
                     </div>
                     <div className="project-artifacts" style={{ marginTop: 8 }}>
+                      {p.share_token && <span className="pill pill-accent">shared</span>}
                       {artifacts.length > 0 ? (
                         artifacts.map((a) => (
                           <span className="pill pill-subtle" key={a}>
@@ -219,7 +222,8 @@ export default function ProjectsPage() {
                         <span className="meta">No design artifacts attached yet.</span>
                       )}
                     </div>
-                  </div>
+                    <span className="project-card-cta">View →</span>
+                  </Link>
                 );
               })}
             </div>
