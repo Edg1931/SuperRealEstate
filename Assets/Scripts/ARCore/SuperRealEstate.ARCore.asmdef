@@ -25,6 +25,7 @@
         "SuperRealEstate.Voice",
         "SuperRealEstate.PropertyData",
         "SuperRealEstate.Overlays",
+        "SuperRealEstate.Construction",
         "SuperRealEstate.AppCore"
     ],
     "includePlatforms": [],
