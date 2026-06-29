@@ -71,8 +71,11 @@ namespace SuperRealEstate.ARCore
 
         private void Update()
         {
-            // Exponential smoothing toward the target (frame-rate independent ease).
-            float k = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.0001f, fadeSeconds));
+            // Exponential smoothing toward the target (frame-rate independent ease);
+            // snap instantly when the user asked for reduced motion.
+            float k = MotionPrefs.ReduceMotion
+                ? 1f
+                : 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.0001f, fadeSeconds));
 
             float pressDip = _press > 0f ? Mathf.Lerp(1f, 0.95f, _press) : 1f;
             _press = Mathf.Max(0f, _press - Time.deltaTime / Mathf.Max(0.0001f, fadeSeconds));

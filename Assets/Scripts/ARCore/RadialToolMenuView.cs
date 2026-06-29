@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 using SuperRealEstate.App;
 using SuperRealEstate.Platform;
 using SuperRealEstate.UI;
@@ -28,6 +29,8 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private TMP_FontAsset font;
         [Tooltip("Device profile used to dim unavailable tools. Match RealEstateApp.")]
         [SerializeField] private XrPlatform targetPlatform = XrPlatform.AndroidXrHeadset;
+        [Tooltip("Gesture/button that summons the palette (palm-up, menu button, controller).")]
+        [SerializeField] private InputActionProperty summonAction;
 
         [SerializeField] private float radiusM = 0.16f;
         [SerializeField] private float arcDegrees = 160f;
@@ -48,6 +51,23 @@ namespace SuperRealEstate.ARCore
         private bool _visible;
 
         private void Awake() { if (anchor == null) anchor = transform; }
+
+        private void OnEnable()
+        {
+            if (summonAction.action != null)
+            {
+                summonAction.action.performed += OnSummon;
+                summonAction.action.Enable();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (summonAction.action != null)
+                summonAction.action.performed -= OnSummon;
+        }
+
+        private void OnSummon(InputAction.CallbackContext _) => Toggle();
 
         /// <summary>Is the palette currently shown?</summary>
         public bool IsVisible => _visible;

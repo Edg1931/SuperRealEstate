@@ -74,6 +74,8 @@ namespace SuperRealEstate.ARCore
                     () => settings.SetVoiceEnabled(!s.VoiceEnabled)),
                 new Row("set.analytics", $"Analytics: {(s.AnalyticsOptIn ? "On" : "Off")}",
                     () => settings.SetAnalyticsOptIn(!s.AnalyticsOptIn)),
+                new Row("set.motion", $"Reduce motion: {(s.ReduceMotion ? "On" : "Off")}",
+                    () => settings.SetReduceMotion(!s.ReduceMotion)),
             };
 
             float pad = DesignTokens.SpaceL;

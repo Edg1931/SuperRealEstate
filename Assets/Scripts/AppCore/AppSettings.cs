@@ -24,6 +24,7 @@ namespace SuperRealEstate.AppCore
         public bool VoiceEnabled = true;
         public bool AnalyticsOptIn = false;   // opt-in only (privacy default)
         public float UiScale = 1.0f;          // 0.75..1.5 spatial UI scale
+        public bool ReduceMotion = false;     // accessibility: collapse UI animation
 
         /// <summary>A clamped copy of <see cref="UiScale"/> in the supported range.</summary>
         public float ClampedUiScale => UiScale < 0.75f ? 0.75f : (UiScale > 1.5f ? 1.5f : UiScale);
@@ -38,6 +39,7 @@ namespace SuperRealEstate.AppCore
                 $"voice={(VoiceEnabled ? 1 : 0)}",
                 $"analytics={(AnalyticsOptIn ? 1 : 0)}",
                 $"uiscale={UiScale.ToString("0.###", CultureInfo.InvariantCulture)}",
+                $"reducemotion={(ReduceMotion ? 1 : 0)}",
             };
             var sb = new StringBuilder();
             for (int i = 0; i < parts.Count; i++)
@@ -78,6 +80,9 @@ namespace SuperRealEstate.AppCore
                     case "uiscale":
                         if (float.TryParse(val, NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
                             settings.UiScale = f;
+                        break;
+                    case "reducemotion":
+                        settings.ReduceMotion = val == "1";
                         break;
                 }
             }

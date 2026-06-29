@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using SuperRealEstate.AppCore;
+using SuperRealEstate.UI;
 
 namespace SuperRealEstate.ARCore
 {
@@ -29,6 +30,7 @@ namespace SuperRealEstate.ARCore
         private void Awake()
         {
             _settings = Load();
+            ApplyGlobals();
             OnChanged.Invoke(_settings);
         }
 
@@ -37,14 +39,19 @@ namespace SuperRealEstate.ARCore
         public void SetVoiceEnabled(bool on) { Settings.VoiceEnabled = on; Commit(); }
         public void SetAnalyticsOptIn(bool on) { Settings.AnalyticsOptIn = on; Commit(); }
         public void SetUiScale(float scale) { Settings.UiScale = scale; Commit(); }
+        public void SetReduceMotion(bool on) { Settings.ReduceMotion = on; Commit(); }
 
         /// <summary>Persist + notify after a change.</summary>
         public void Commit()
         {
             PlayerPrefs.SetString(PrefKey, Settings.Serialize());
             PlayerPrefs.Save();
+            ApplyGlobals();
             OnChanged.Invoke(Settings);
         }
+
+        /// <summary>Push settings that other layers read as shared globals.</summary>
+        private void ApplyGlobals() => MotionPrefs.SetReduceMotion(Settings.ReduceMotion);
 
         private static AppSettings Load()
             => AppSettings.Deserialize(PlayerPrefs.GetString(PrefKey, string.Empty));

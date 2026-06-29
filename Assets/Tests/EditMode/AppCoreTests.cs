@@ -25,6 +25,7 @@ namespace SuperRealEstate.Tests
                 VoiceEnabled = false,
                 AnalyticsOptIn = true,
                 UiScale = 1.25f,
+                ReduceMotion = true,
             };
             AppSettings back = AppSettings.Deserialize(s.Serialize());
 
@@ -33,6 +34,7 @@ namespace SuperRealEstate.Tests
             Assert.IsFalse(back.VoiceEnabled);
             Assert.IsTrue(back.AnalyticsOptIn);
             Assert.That(back.UiScale, Is.EqualTo(1.25f).Within(0.001f));
+            Assert.IsTrue(back.ReduceMotion);
         }
 
         [Test]

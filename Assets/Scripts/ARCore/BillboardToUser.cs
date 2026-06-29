@@ -46,7 +46,7 @@ namespace SuperRealEstate.ARCore
             if (toCam.sqrMagnitude < 1e-6f) return;
 
             Quaternion want = Quaternion.LookRotation(toCam.normalized, Vector3.up);
-            transform.rotation = turnLerp <= 0f
+            transform.rotation = (turnLerp <= 0f || MotionPrefs.ReduceMotion)
                 ? want
                 : Quaternion.Slerp(transform.rotation, want, 1f - Mathf.Exp(-turnLerp * Time.deltaTime));
         }
