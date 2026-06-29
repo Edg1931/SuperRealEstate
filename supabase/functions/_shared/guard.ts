@@ -40,6 +40,28 @@ export function requireAuth(req: Request): void {
   }
 }
 
+// Reads the JWT's `sub` (user id) from the Authorization header for per-user
+// attribution / rate limiting — now meaningful because clients send the signed-in
+// user's token, not the anon key. Does NOT verify the signature (Supabase
+// verify_jwt already did at the platform edge); it only reads claims. Returns
+// null for the anon key (role !== 'authenticated') or a malformed token.
+export function userIdFromAuth(req: Request): string | null {
+  const header = req.headers.get("authorization") ?? "";
+  const m = /^Bearer\s+(.+)$/i.exec(header.trim());
+  if (!m) return null;
+  const parts = m[1].trim().split(".");
+  if (parts.length < 2) return null;
+  try {
+    let b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    b64 += "=".repeat((4 - (b64.length % 4)) % 4);
+    const claims = JSON.parse(atob(b64)) as { sub?: string; role?: string };
+    if (claims.role && claims.role !== "authenticated") return null; // anon key → no user
+    return claims.sub ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Reads the request body, rejecting (GuardError 413) if the declared
 // Content-Length or the actual body exceeds maxBytes, and parsing the result as
 // JSON (GuardError 400 on invalid JSON). Returns the parsed value.

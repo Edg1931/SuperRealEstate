@@ -74,6 +74,12 @@ namespace SuperRealEstate.ARCore
         /// <summary>Optional Realtime channel for low-latency placements + presence.</summary>
         public SupabaseRealtimeChannel RealtimeChannel { get; private set; }
 
+        // AI/data Edge-Function clients — kept so the signed-in token can be
+        // propagated to them (per-user auth → rate-limit attribution).
+        private EdgeFunctionSceneAnalyzer _sceneAnalyzer;
+        private EdgeFunctionPlantIdentifier _plantIdentifier;
+        private EdgeFunctionVoiceAgent _voiceAgent;
+
         public bool IsConfigured => ProjectStore != null && stagingController != null && stagedSceneRenderer != null;
 
         private void Awake()
@@ -112,18 +118,16 @@ namespace SuperRealEstate.ARCore
         {
             if (sceneActions == null) return;
 
-            EdgeFunctionSceneAnalyzer analyzer = null;
-            EdgeFunctionPlantIdentifier plantId = null;
             if (!string.IsNullOrEmpty(supabaseUrl))
             {
-                analyzer = new EdgeFunctionSceneAnalyzer(supabaseUrl, supabaseAnonKey);
-                plantId = new EdgeFunctionPlantIdentifier(supabaseUrl, supabaseAnonKey);
+                _sceneAnalyzer = new EdgeFunctionSceneAnalyzer(supabaseUrl, supabaseAnonKey);
+                _plantIdentifier = new EdgeFunctionPlantIdentifier(supabaseUrl, supabaseAnonKey);
             }
 
             System.Func<byte[]> frameProvider =
                 cameraFrameProvider != null ? cameraFrameProvider.CaptureJpeg : (System.Func<byte[]>)null;
 
-            sceneActions.Configure(analyzer, plantId, frameProvider);
+            sceneActions.Configure(_sceneAnalyzer, _plantIdentifier, frameProvider);
 
             if (wallPortalRenderer != null)
                 sceneActions.ConfigureRenovation(wallPortalRenderer);
@@ -142,12 +146,12 @@ namespace SuperRealEstate.ARCore
             if (voiceCommandController == null || sceneActions == null || string.IsNullOrEmpty(supabaseUrl))
                 return;
 
-            var agent = new EdgeFunctionVoiceAgent(supabaseUrl, supabaseAnonKey);
+            _voiceAgent = new EdgeFunctionVoiceAgent(supabaseUrl, supabaseAnonKey);
             var dispatcher = new ActionDispatcher(sceneActions);
             XrCapabilities caps = XrCapabilityProfiles.For(targetPlatform);
 
             voiceCommandController.Configure(
-                agent, dispatcher, caps,
+                _voiceAgent, dispatcher, caps,
                 frameProvider,
                 () => sceneActions.LastMeasurements,
                 location: null,
@@ -160,6 +164,10 @@ namespace SuperRealEstate.ARCore
             Backend?.SetAccessToken(token);
             Sessions?.SetAccessToken(token);
             RealtimeChannel?.SetAccessToken(token);
+            // AI Edge-Function calls become per-user so they can be rate-limited + cost-attributed.
+            _sceneAnalyzer?.SetAccessToken(token);
+            _plantIdentifier?.SetAccessToken(token);
+            _voiceAgent?.SetAccessToken(token);
         }
 
         /// <summary>

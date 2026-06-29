@@ -16,6 +16,7 @@ namespace SuperRealEstate.Voice
     {
         private readonly string _functionUrl;
         private readonly string _anonKey;
+        private string _accessToken;
 
         public EdgeFunctionVoiceAgent(string supabaseUrl, string anonKey)
         {
@@ -23,6 +24,9 @@ namespace SuperRealEstate.Voice
             _functionUrl = $"{supabaseUrl.TrimEnd('/')}/functions/v1/voice-agent";
             _anonKey = anonKey;
         }
+
+        /// <summary>Set the signed-in user's token so AI calls are per-user (RLS + rate-limit attribution).</summary>
+        public void SetAccessToken(string token) => _accessToken = token;
 
         public async Task<VoiceResponse> AskAsync(VoiceContext context, CancellationToken ct = default)
         {
@@ -54,7 +58,7 @@ namespace SuperRealEstate.Voice
             www.SetRequestHeader("Content-Type", "application/json");
             if (!string.IsNullOrEmpty(_anonKey))
             {
-                www.SetRequestHeader("Authorization", $"Bearer {_anonKey}");
+                www.SetRequestHeader("Authorization", $"Bearer {(_accessToken ?? _anonKey)}");
                 www.SetRequestHeader("apikey", _anonKey);
             }
 

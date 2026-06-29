@@ -18,6 +18,7 @@ namespace SuperRealEstate.Insights
     {
         private readonly string _functionUrl;
         private readonly string _anonKey;
+        private string _accessToken;
 
         public EdgeFunctionPlantIdentifier(string supabaseUrl, string anonKey)
         {
@@ -25,6 +26,9 @@ namespace SuperRealEstate.Insights
             _functionUrl = $"{supabaseUrl.TrimEnd('/')}/functions/v1/plant-id";
             _anonKey = anonKey;
         }
+
+        /// <summary>Set the signed-in user's token so AI calls are per-user (RLS + rate-limit attribution).</summary>
+        public void SetAccessToken(string token) => _accessToken = token;
 
         public async Task<IReadOnlyList<PlantIdentification>> IdentifyAsync(byte[] frameImage, CancellationToken ct = default)
         {
@@ -39,7 +43,7 @@ namespace SuperRealEstate.Insights
             www.SetRequestHeader("Content-Type", "application/json");
             if (!string.IsNullOrEmpty(_anonKey))
             {
-                www.SetRequestHeader("Authorization", $"Bearer {_anonKey}");
+                www.SetRequestHeader("Authorization", $"Bearer {(_accessToken ?? _anonKey)}");
                 www.SetRequestHeader("apikey", _anonKey);
             }
 

@@ -26,6 +26,7 @@ namespace SuperRealEstate.PropertyData
     {
         private readonly string _baseUrl;
         private readonly string _anonKey;
+        private string _accessToken;
 
         public EdgeFunctionPropertyData(string supabaseUrl, string anonKey)
         {
@@ -33,6 +34,9 @@ namespace SuperRealEstate.PropertyData
             _baseUrl = $"{supabaseUrl.TrimEnd('/')}/functions/v1";
             _anonKey = anonKey;
         }
+
+        /// <summary>Set the signed-in user's token so AI/data calls are per-user (RLS + rate-limit attribution).</summary>
+        public void SetAccessToken(string token) => _accessToken = token;
 
         public async Task<IReadOnlyList<Comp>> GetCompsAsync(double lat, double lng, CancellationToken ct = default)
         {
@@ -66,7 +70,7 @@ namespace SuperRealEstate.PropertyData
             www.SetRequestHeader("Content-Type", "application/json");
             if (!string.IsNullOrEmpty(_anonKey))
             {
-                www.SetRequestHeader("Authorization", $"Bearer {_anonKey}");
+                www.SetRequestHeader("Authorization", $"Bearer {(_accessToken ?? _anonKey)}");
                 www.SetRequestHeader("apikey", _anonKey);
             }
 
