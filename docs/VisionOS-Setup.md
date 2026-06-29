@@ -52,3 +52,23 @@ The `RoomMeasureController` and the entire measurement/cost core are
 backend-agnostic. Bringing up Galaxy XR is mostly: enable the **Android XR /
 OpenXR** provider in XR Plug-in Management, switch platform to Android, and
 re-test — no rewrite of the measurement logic.
+
+## Voice (STT/TTS) — native speech plugin
+
+The hands-free voice loop on Vision Pro / iOS uses a small native plugin
+(`Assets/Plugins/iOS/SRESpeech.mm`, bridged by `AppleSpeech.cs`) over
+**SFSpeechRecognizer** (speech-to-text) and **AVSpeechSynthesizer** (text-to-speech).
+`SpeechIO` selects it automatically on the Apple players; the Editor falls back to
+the manual recognizer so the loop is testable (`VoiceCaptureController.FeedTranscript(...)`).
+
+One-time Xcode setup on the generated project (until a build post-processor is added):
+1. **Link frameworks:** add **Speech.framework** and **AVFoundation.framework**
+   to the Unity-iPhone / app target (General → Frameworks, Libraries…).
+2. **Info.plist usage strings** (required or the app is rejected / crashes):
+   - `NSSpeechRecognitionUsageDescription` = "Used to take voice commands."
+   - `NSMicrophoneUsageDescription` = "Used to hear your voice commands."
+3. **visionOS:** set the plugin importer to also target visionOS (or copy the
+   `.mm` to `Assets/Plugins/VisionOS/`). The same APIs are available there.
+
+Scene wiring: add `VoiceCaptureController`, drag in the `VoiceCommandController`,
+bind `pushToTalk` to a hold-to-talk gesture; it speaks the agent's reply via TTS.

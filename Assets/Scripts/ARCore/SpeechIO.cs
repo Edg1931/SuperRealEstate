@@ -73,19 +73,25 @@ namespace SuperRealEstate.ARCore
     {
         public static ISpeechRecognizer CreateRecognizer()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_VISIONOS) && !UNITY_EDITOR
+            try { return AppleSpeech.Instance; }
+            catch (Exception e) { Debug.LogWarning($"[SpeechIO] Apple recognizer unavailable: {e.Message}"); return new ManualSpeechRecognizer(); }
+#elif UNITY_ANDROID && !UNITY_EDITOR
             try { return new AndroidSpeechRecognizer(); }
             catch (Exception e) { Debug.LogWarning($"[SpeechIO] Android recognizer unavailable: {e.Message}"); return new ManualSpeechRecognizer(); }
 #else
-            // iOS/visionOS need a native plugin (SFSpeechRecognizer); until then the
-            // manual recognizer keeps the loop testable. See docs.
+            // Editor / unsupported: the manual recognizer keeps the loop testable
+            // (VoiceCaptureController.FeedTranscript).
             return new ManualSpeechRecognizer();
 #endif
         }
 
         public static ISpeechSynthesizer CreateSynthesizer()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_IOS || UNITY_VISIONOS) && !UNITY_EDITOR
+            try { return AppleSpeech.Instance; }
+            catch (Exception e) { Debug.LogWarning($"[SpeechIO] Apple TTS unavailable: {e.Message}"); return new NullSpeechSynthesizer(); }
+#elif UNITY_ANDROID && !UNITY_EDITOR
             try { return new AndroidTextToSpeech(); }
             catch (Exception e) { Debug.LogWarning($"[SpeechIO] Android TTS unavailable: {e.Message}"); return new NullSpeechSynthesizer(); }
 #else
