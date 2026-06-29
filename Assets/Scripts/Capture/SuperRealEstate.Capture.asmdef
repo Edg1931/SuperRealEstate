@@ -1,0 +1,14 @@
+{
+    "name": "SuperRealEstate.Capture",
+    "rootNamespace": "SuperRealEstate.Capture",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
