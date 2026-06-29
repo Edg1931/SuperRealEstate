@@ -67,9 +67,11 @@ anon-key AI-auth gap; unverified third-party APIs).
 
 ## P1 — soon
 
-- **[AR] Wire navigation:** a summon gesture → `RadialToolMenuView.Show()`, and a
-  bridge subscribing `OnToolSelected` → `SceneAppActions`/panels. Today only voice acts.
-- **[AR] Implement `StageFurnitureAsync` + `ShowCompsAsync`** (renderers already exist).
+- ✅ **[AR] Navigation wired** — `RadialToolMenuView.summonAction` + `ToolMenuActionBridge`
+  route the menu to `SceneAppActions`; gaze+pinch now acts, not just voice.
+- ✅ **[AR] `StageFurnitureAsync` + `ShowCompsAsync` implemented** (real staging +
+  comp overlays via the existing renderers).
+- ✅ **[AR] Reduce-motion, commit audio/haptic hook, collider strip** shipped.
 - **[AR] Platform STT/TTS** adapters feeding `VoiceCommandController`.
 - **[AR] Assemble the AR scene** for one target (XR Origin + AR Session + input + our MonoBehaviours).
 - **[Web] `/projects/[id]` detail** (read-only plan render) → unblocks share links,
