@@ -144,7 +144,7 @@ namespace SuperRealEstate.ARCore
 
             var agent = new EdgeFunctionVoiceAgent(supabaseUrl, supabaseAnonKey);
             var dispatcher = new ActionDispatcher(sceneActions);
-            XrCapabilities caps = XrCapabilities.For(targetPlatform);
+            XrCapabilities caps = XrCapabilityProfiles.For(targetPlatform);
 
             voiceCommandController.Configure(
                 agent, dispatcher, caps,

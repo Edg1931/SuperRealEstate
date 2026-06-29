@@ -77,7 +77,7 @@ namespace SuperRealEstate.ARCore
             _root.transform.SetParent(anchor, worldPositionStays: false);
             _root.AddComponent<BillboardToUser>();
 
-            XrCapabilities caps = XrCapabilities.For(targetPlatform);
+            XrCapabilities caps = XrCapabilityProfiles.For(targetPlatform);
             int n = _model.Items.Count;
             float sweep = Mathf.Deg2Rad * arcDegrees;
             float start = -sweep * 0.5f;
