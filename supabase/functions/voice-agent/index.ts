@@ -116,10 +116,17 @@ Deno.serve(async (req: Request) => {
       output_config: { format: { type: "json_schema", schema: SCHEMA } },
     });
     const text = response.content.find((b) => b.type === "text");
-    const json = text && text.type === "text"
-      ? text.text
-      : '{"reply":"Sorry, I didn\'t catch that.","action":{"type":"none","target":"","material":"","params":""}}';
-    return new Response(json, { status: 200, headers: { ...cors(), "content-type": "application/json" } });
+    if (!text || text.type !== "text") {
+      console.error("[voice-agent] no text block in model response", {
+        stopReason: response.stop_reason,
+        blockTypes: response.content.map((b) => b.type),
+      });
+      return new Response(
+        '{"reply":"Sorry, I didn\'t catch that.","action":{"type":"none","target":"","material":"","params":""}}',
+        { status: 200, headers: { ...cors(), "content-type": "application/json" } },
+      );
+    }
+    return new Response(text.text, { status: 200, headers: { ...cors(), "content-type": "application/json" } });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(JSON.stringify({ error: message }), {

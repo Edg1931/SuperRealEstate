@@ -112,8 +112,14 @@ Deno.serve(async (req: Request) => {
     });
 
     const text = response.content.find((b) => b.type === "text");
-    const json = text && text.type === "text" ? text.text : '{"plants":[]}';
-    return new Response(json, { status: 200, headers: { ...corsHeaders(), "content-type": "application/json" } });
+    if (!text || text.type !== "text") {
+      console.error("[plant-id] no text block in model response", {
+        stopReason: response.stop_reason,
+        blockTypes: response.content.map((b) => b.type),
+      });
+      return new Response('{"plants":[]}', { status: 200, headers: { ...corsHeaders(), "content-type": "application/json" } });
+    }
+    return new Response(text.text, { status: 200, headers: { ...corsHeaders(), "content-type": "application/json" } });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(JSON.stringify({ error: message }), {

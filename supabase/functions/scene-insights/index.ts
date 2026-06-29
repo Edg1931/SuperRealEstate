@@ -181,9 +181,21 @@ Deno.serve(async (req: Request) => {
     });
 
     const text = response.content.find((b) => b.type === "text");
-    const json = text && text.type === "text" ? text.text : '{"insights":[],"surfaces":[]}';
+    if (!text || text.type !== "text") {
+      // No text block → the structured-output call likely didn't serialize as
+      // expected (SDK/API shape drift). Log loudly so it's visible in the
+      // function logs instead of silently returning empty insights.
+      console.error("[scene-insights] no text block in model response", {
+        stopReason: response.stop_reason,
+        blockTypes: response.content.map((b) => b.type),
+      });
+      return new Response('{"insights":[],"surfaces":[]}', {
+        status: 200,
+        headers: { ...corsHeaders(), "content-type": "application/json" },
+      });
+    }
 
-    return new Response(json, {
+    return new Response(text.text, {
       status: 200,
       headers: { ...corsHeaders(), "content-type": "application/json" },
     });
