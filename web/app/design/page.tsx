@@ -24,6 +24,7 @@ import {
   type BlueprintUnderlay,
   type CalibrationUnit,
 } from "@/lib/blueprint";
+import { estimateFinishCost, formatUsd, type CostMaterial } from "@/lib/costEstimate";
 
 // --- Canvas constants ------------------------------------------------------
 const EXTENT_W_M = 12; // plan width  (east, x)
@@ -51,6 +52,8 @@ interface MaterialItem {
   name: string;
   brand: string | null;
   category: string | null;
+  price_per_unit: number | null;
+  unit: string | null;
 }
 
 type Mode = "wall" | "furniture" | "calibrate";
@@ -167,7 +170,7 @@ export default function DesignPage() {
     (async () => {
       const { data, error } = await supabase
         .from("materials")
-        .select("id,name,brand,category")
+        .select("id,name,brand,category,price_per_unit,unit")
         .order("category", { ascending: true })
         .order("name", { ascending: true });
       if (!active) return;
@@ -227,6 +230,20 @@ export default function DesignPage() {
     for (const w of walls) m.set(w.id, w.id);
     return m;
   }, [walls]);
+
+  // Pricing map + live material-cost estimate from the assigned wall finishes.
+  const materialsCostById = useMemo(() => {
+    const m = new Map<string, CostMaterial>();
+    for (const mat of materials) {
+      m.set(mat.id, { name: mat.name, unit: mat.unit ?? "each", pricePerUnit: mat.price_per_unit ?? 0 });
+    }
+    return m;
+  }, [materials]);
+
+  const cost = useMemo(
+    () => estimateFinishCost(walls, edits, materialsCostById),
+    [walls, edits, materialsCostById],
+  );
 
   // Wall ids referenced by any RemoveWall edit — used to hint them on canvas.
   const removedWallIds = useMemo(() => {
@@ -1404,6 +1421,36 @@ export default function DesignPage() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Live material-cost estimate from the assigned wall finishes */}
+          <div className="card design-panel design-cost">
+            <div className="project-card-head">
+              <h3>Estimated cost</h3>
+              <span className="pill pill-positive">{formatUsd(cost.total)}</span>
+            </div>
+            {cost.lines.length === 0 ? (
+              <div className="meta">
+                Assign a wall finish (Edits → Change wall finish) to see a material estimate.
+              </div>
+            ) : (
+              <>
+                <ul className="design-list">
+                  {cost.lines.map((l, i) => (
+                    <li key={`${l.wallId}-${i}`}>
+                      <span className="meta">
+                        {l.wallId} · {l.materialName} — {l.quantity} {l.unitLabel}
+                      </span>
+                      <span className="meta">{formatUsd(l.subtotal)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="meta" style={{ marginTop: 8 }}>
+                  Materials {formatUsd(cost.subtotal)} + {Math.round(cost.wasteFactor * 100)}% waste ·{" "}
+                  <span className="pill" style={{ color: "var(--advisory)" }}>advisory — material only, not a quote</span>
+                </div>
+              </>
+            )}
           </div>
         </aside>
       </div>
