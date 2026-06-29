@@ -28,8 +28,28 @@ via `supabase/seed.sql`).
 
 A top-down plan authoring tool (Microsoft-Layout-style). On a PC or phone you:
 
+- **Upload a blueprint** — drop in a floor-plan image (a builder blueprint or a
+  CubiCasa / Matterport export, PNG/JPG; PDFs aren't supported — export an image
+  first). It renders as a translucent underlay behind the grid/walls/items
+  (opacity slider, **Remove blueprint** to clear). It's a tracing aid only and is
+  **never** part of the published payload.
+- **Calibrate scale** — with the **Calibrate scale** tool, click two points on a
+  feature whose real length you know, then enter that length (ft or m) and **Set
+  scale**. The blueprint is rescaled about your first click so anything traced
+  over it is to true real-world scale. By default already-drawn walls are left
+  unchanged (calibrate before tracing); tick *Also rescale already-drawn walls*
+  to bring them along. Math: `dPlan = hypot(p2 − p1)`, `dReal` = entered value in
+  meters (ft × 0.3048), factor `f = dReal / dPlan`; the underlay's size scales by
+  `f` and its top-left moves so the point under p1 stays fixed.
+- **Import floor plan (JSON)** — load a building-model geometry JSON (the
+  `{ walls:[{ start, end, thicknessM, heightM, isExterior }], … }` shape stored in
+  `building_models.geometry`). Its walls become editable segments — choose
+  **replace** or **append** when walls already exist; missing fields fall back to
+  defaults (thickness 0.1 m, height 2.5 m, exterior). Malformed JSON shows an
+  inline error card.
 - **Draw walls** — click to drop a start point, click again to finish a segment
-  (snaps to a 0.25 m grid).
+  (snaps to a 0.25 m grid). Trace over a calibrated blueprint so the published
+  geometry matches the real house (and the AR walk).
 - **Place furniture** — pick a vendor catalog item (loaded from
   `vendor_catalog_items`) or a generic labelled box, then click on the canvas;
   select a placed item to rotate (yaw) and scale.
@@ -52,6 +72,9 @@ On publish, rows are inserted in this order, threading the returned ids:
 
 The pure serialization lives in `lib/design.ts` and reuses the payload types in
 `lib/projectPayload.ts` — keep both in sync with the C# `ProjectPayloadParser`.
+The blueprint calibration math (`metersFrom`, `scaleFactor`, `rescaleUnderlay`,
+`rescaleWall`) and geometry import (`parseGeometryWalls`) live as pure,
+DOM-free helpers in `lib/blueprint.ts`.
 
 ## My projects (`/projects`)
 

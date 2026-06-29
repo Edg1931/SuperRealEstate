@@ -14,6 +14,16 @@ import {
 } from "@/lib/design";
 import type { Point2, RenovationEdit } from "@/lib/projectPayload";
 import { summarizeEdit } from "@/lib/edits";
+import {
+  metersFrom,
+  parseGeometryWalls,
+  planDistance,
+  rescaleUnderlay,
+  rescaleWall,
+  scaleFactor,
+  type BlueprintUnderlay,
+  type CalibrationUnit,
+} from "@/lib/blueprint";
 
 // --- Canvas constants ------------------------------------------------------
 const EXTENT_W_M = 12; // plan width  (east, x)
@@ -43,7 +53,14 @@ interface MaterialItem {
   category: string | null;
 }
 
-type Mode = "wall" | "furniture";
+type Mode = "wall" | "furniture" | "calibrate";
+
+// The two clicks collected during a calibration pass, before the user enters
+// the known real-world distance.
+interface CalibrationPick {
+  p1: Point2;
+  p2: Point2 | null;
+}
 
 // A short label for a wall, used in edit summaries and selects.
 function wallLabel(w: DesignWall): string {
@@ -80,6 +97,19 @@ export default function DesignPage() {
   const [pendingStart, setPendingStart] = useState<Point2 | null>(null);
   const [cursor, setCursor] = useState<Point2 | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
+  // ----- Blueprint underlay + scale calibration (tracing aids; NOT published) -----
+  const [underlay, setUnderlay] = useState<BlueprintUnderlay | null>(null);
+  const [calibPick, setCalibPick] = useState<CalibrationPick | null>(null);
+  const [calibValue, setCalibValue] = useState<string>("");
+  const [calibUnit, setCalibUnit] = useState<CalibrationUnit>("ft");
+  const [calibRescaleWalls, setCalibRescaleWalls] = useState(false);
+  const [calibReadout, setCalibReadout] = useState<string | null>(null);
+  const blueprintInputRef = useRef<HTMLInputElement | null>(null);
+
+  // ----- Geometry import (CubiCasa / Matterport / building_models.geometry) -----
+  const [importError, setImportError] = useState<string | null>(null);
+  const geometryInputRef = useRef<HTMLInputElement | null>(null);
 
   // ----- Furniture picker -----
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
@@ -247,6 +277,19 @@ export default function DesignPage() {
       if (!raw) return;
       const p = snapPointToGrid(clampToExtent(raw), GRID_STEP_M);
 
+      if (mode === "calibrate") {
+        // Collect two points on a feature of known length. Don't snap to the
+        // grid — calibration should use the exact clicked positions.
+        if (!calibPick || calibPick.p2) {
+          // First click (or restart after a completed pair).
+          setCalibPick({ p1: raw, p2: null });
+        } else {
+          // Second click completes the pair; the form then appears.
+          setCalibPick({ p1: calibPick.p1, p2: raw });
+        }
+        return;
+      }
+
       if (mode === "wall") {
         if (!pendingStart) {
           setPendingStart(p);
@@ -287,7 +330,16 @@ export default function DesignPage() {
       setItems((prev) => [...prev, item]);
       setSelectedItemId(item.id);
     },
-    [mode, pendingStart, clampToExtent, eventToPlan, pickedCatalogId, catalogById, genericLabel],
+    [
+      mode,
+      pendingStart,
+      clampToExtent,
+      eventToPlan,
+      pickedCatalogId,
+      catalogById,
+      genericLabel,
+      calibPick,
+    ],
   );
 
   // --- Mutators ---
@@ -354,6 +406,127 @@ export default function DesignPage() {
     setPendingStart(null);
     setSelectedItemId(null);
   }, []);
+
+  // --- Blueprint underlay (tracing aid; never part of the published payload) ---
+  const onBlueprintFile = useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
+    const file = evt.target.files?.[0];
+    // Allow re-selecting the same file later.
+    evt.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === "string" ? reader.result : null;
+      if (!dataUrl) return;
+      // Read the natural aspect ratio so the default height matches the image.
+      const img = new Image();
+      img.onload = () => {
+        const aspect =
+          img.naturalWidth > 0 && img.naturalHeight > 0
+            ? img.naturalHeight / img.naturalWidth
+            : EXTENT_H_M / EXTENT_W_M;
+        const widthM = EXTENT_W_M;
+        const heightM = widthM * aspect;
+        setUnderlay({
+          dataUrl,
+          x: 0, // plan top-left x
+          y: EXTENT_H_M, // plan top-left y (north edge)
+          widthM,
+          heightM,
+          opacity: 0.5,
+        });
+        setCalibReadout(null);
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const removeBlueprint = useCallback(() => {
+    setUnderlay(null);
+    setCalibPick(null);
+    setCalibReadout(null);
+  }, []);
+
+  const setUnderlayOpacity = useCallback((opacity: number) => {
+    setUnderlay((cur) => (cur ? { ...cur, opacity } : cur));
+  }, []);
+
+  // --- Scale calibration: two clicks + a known distance → a scale factor f ---
+  const applyCalibration = useCallback(() => {
+    if (!calibPick || !calibPick.p2 || !underlay) return;
+    const dPlan = planDistance(calibPick.p1, calibPick.p2);
+    const dReal = metersFrom(Number(calibValue), calibUnit);
+    const f = scaleFactor(dPlan, dReal);
+    if (!Number.isFinite(f)) return;
+
+    setUnderlay((cur) => (cur ? rescaleUnderlay(cur, calibPick.p1, f) : cur));
+    // Optionally bring already-drawn walls along (default: leave them as-is).
+    if (calibRescaleWalls) {
+      setWalls((prev) => prev.map((w) => rescaleWall(w, calibPick.p1, f)));
+    }
+    setCalibReadout(
+      `Scale ×${f.toFixed(3)} applied — ${dPlan.toFixed(2)} m measured now = ` +
+        `${dReal.toFixed(2)} m real. Blueprint ≈ ${(underlay.widthM * f).toFixed(2)}×` +
+        `${(underlay.heightM * f).toFixed(2)} m. (Canvas grid: 1 m = ${PX_PER_M} px.)`,
+    );
+    setCalibPick(null);
+    setCalibValue("");
+  }, [calibPick, underlay, calibValue, calibUnit, calibRescaleWalls]);
+
+  const cancelCalibration = useCallback(() => {
+    setCalibPick(null);
+  }, []);
+
+  // --- Geometry import (CubiCasa / Matterport / building_models.geometry) ---
+  const loadImportedWalls = useCallback(
+    (imported: DesignWall[], replace: boolean) => {
+      if (replace) {
+        setWalls(imported);
+        // Stale edit/finish/remove targets would no longer exist — clear them.
+        setEdits([]);
+        setFinishWallId("");
+        setRemoveWallId("");
+        setPendingStart(null);
+      } else {
+        setWalls((prev) => [...prev, ...imported]);
+      }
+    },
+    [],
+  );
+
+  const onGeometryFile = useCallback(
+    (evt: React.ChangeEvent<HTMLInputElement>) => {
+      const file = evt.target.files?.[0];
+      evt.target.value = "";
+      if (!file) return;
+      setImportError(null);
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = typeof reader.result === "string" ? reader.result : "";
+          const json: unknown = JSON.parse(text);
+          const imported = parseGeometryWalls(json);
+          // Replace by default (a clean import); confirm so appended traces or
+          // an existing drawing aren't silently discarded.
+          const replace =
+            walls.length === 0
+              ? true
+              : window.confirm(
+                  `Import ${imported.length} wall(s). Replace the ${walls.length} ` +
+                    `existing wall(s)?\n\nOK = replace · Cancel = append.`,
+                );
+          loadImportedWalls(imported, replace);
+        } catch (e) {
+          setImportError(
+            e instanceof Error ? e.message : "Couldn't parse that geometry JSON.",
+          );
+        }
+      };
+      reader.onerror = () => setImportError("Couldn't read that file.");
+      reader.readAsText(file);
+    },
+    [walls.length, loadImportedWalls],
+  );
 
   // --- Payload export ---
   const copyJson = useCallback(async () => {
@@ -516,6 +689,20 @@ export default function DesignPage() {
 
   const origin = planToScreen({ x: 0, y: 0 });
 
+  // The underlay's screen rect. The image's top-left (plan x, y) maps to a
+  // screen point via planToScreen (which flips y); width/height in px are the
+  // plan extents × PX_PER_M.
+  const underlayScreen = useMemo(() => {
+    if (!underlay) return null;
+    const tl = planToScreen({ x: underlay.x, y: underlay.y });
+    return {
+      x: tl.sx,
+      y: tl.sy,
+      width: underlay.widthM * PX_PER_M,
+      height: underlay.heightM * PX_PER_M,
+    };
+  }, [underlay]);
+
   return (
     <main>
       <p>
@@ -554,6 +741,19 @@ export default function DesignPage() {
             >
               Furniture
             </button>
+            <button
+              type="button"
+              className={mode === "calibrate" ? "tool-btn active" : "tool-btn"}
+              aria-pressed={mode === "calibrate"}
+              onClick={() => {
+                setMode("calibrate");
+                setPendingStart(null);
+                setSelectedItemId(null);
+                setCalibPick(null);
+              }}
+            >
+              Calibrate scale
+            </button>
             <span className="design-toolbar-spacer" />
             {mode === "wall" && pendingStart && (
               <button type="button" className="tool-btn" onClick={() => setPendingStart(null)}>
@@ -586,6 +786,22 @@ export default function DesignPage() {
                 height={EXTENT_H_M * PX_PER_M}
                 className="design-plan-bg"
               />
+
+              {/* blueprint underlay — behind grid/walls/items; a tracing aid */}
+              {underlay && underlayScreen && (
+                <image
+                  href={underlay.dataUrl}
+                  x={underlayScreen.x}
+                  y={underlayScreen.y}
+                  width={underlayScreen.width}
+                  height={underlayScreen.height}
+                  opacity={underlay.opacity}
+                  preserveAspectRatio="none"
+                  className="design-underlay"
+                  aria-hidden="true"
+                />
+              )}
+
               {gridLines}
 
               {/* origin marker */}
@@ -665,6 +881,45 @@ export default function DesignPage() {
                 );
               })}
 
+              {/* calibration picks (two clicks on a feature of known length) */}
+              {mode === "calibrate" && calibPick && (
+                <>
+                  <circle
+                    cx={planToScreen(calibPick.p1).sx}
+                    cy={planToScreen(calibPick.p1).sy}
+                    r={5}
+                    className="design-calib-pt"
+                  />
+                  {calibPick.p2 ? (
+                    <>
+                      <line
+                        x1={planToScreen(calibPick.p1).sx}
+                        y1={planToScreen(calibPick.p1).sy}
+                        x2={planToScreen(calibPick.p2).sx}
+                        y2={planToScreen(calibPick.p2).sy}
+                        className="design-calib-line"
+                      />
+                      <circle
+                        cx={planToScreen(calibPick.p2).sx}
+                        cy={planToScreen(calibPick.p2).sy}
+                        r={5}
+                        className="design-calib-pt"
+                      />
+                    </>
+                  ) : (
+                    cursor && (
+                      <line
+                        x1={planToScreen(calibPick.p1).sx}
+                        y1={planToScreen(calibPick.p1).sy}
+                        x2={planToScreen(cursor).sx}
+                        y2={planToScreen(cursor).sy}
+                        className="design-calib-line"
+                      />
+                    )
+                  )}
+                </>
+              )}
+
               {/* snap cursor */}
               {cursor && (
                 <circle
@@ -680,7 +935,13 @@ export default function DesignPage() {
                 ? pendingStart
                   ? "Click again to finish the wall segment."
                   : "Click to drop the wall start point."
-                : "Pick an item at right, then click on the canvas to place it."}
+                : mode === "calibrate"
+                  ? calibPick && calibPick.p2
+                    ? "Two points set — enter the real length at right, then Set scale."
+                    : calibPick
+                      ? "Click the second point of the known feature."
+                      : "Click two points on a feature whose real length you know."
+                  : "Pick an item at right, then click on the canvas to place it."}
               {cursor && (
                 <span className="design-coord">
                   {" "}
@@ -693,6 +954,161 @@ export default function DesignPage() {
 
         {/* ---------- Side panel ---------- */}
         <aside className="design-side">
+          {/* ---------- Blueprint underlay + calibration + import ---------- */}
+          <div className="card design-panel">
+            <h3>Blueprint &amp; scale</h3>
+            <p className="meta">
+              Upload a floor-plan image (a builder blueprint or a CubiCasa /
+              Matterport export), calibrate it to one known dimension, then trace
+              walls over it to true scale. The image is a tracing aid only — it is
+              never part of the published payload. PDFs aren’t supported; export an
+              image (PNG/JPG) first.
+            </p>
+
+            <label className="design-field">
+              <span>Upload blueprint (PNG/JPG)</span>
+              <input
+                ref={blueprintInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/*"
+                onChange={onBlueprintFile}
+                aria-label="Upload blueprint image"
+              />
+            </label>
+
+            {underlay && (
+              <>
+                <label className="design-field">
+                  <span>Opacity: {Math.round(underlay.opacity * 100)}%</span>
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={1}
+                    step={0.05}
+                    value={underlay.opacity}
+                    onChange={(e) => setUnderlayOpacity(Number(e.target.value))}
+                    aria-label="Blueprint opacity"
+                  />
+                </label>
+                <div className="meta">
+                  Blueprint ≈ {underlay.widthM.toFixed(2)}×
+                  {underlay.heightM.toFixed(2)} m on the plan.
+                </div>
+                <button type="button" className="tool-btn danger" onClick={removeBlueprint}>
+                  Remove blueprint
+                </button>
+              </>
+            )}
+
+            {/* Calibration form (appears once two points are picked) */}
+            {underlay && (
+              <fieldset className="design-edit-group">
+                <legend>Calibrate scale</legend>
+                {mode !== "calibrate" && (
+                  <div className="meta">
+                    Switch to the <strong>Calibrate scale</strong> tool, then click two
+                    points on a feature of known length.
+                  </div>
+                )}
+                {mode === "calibrate" && !calibPick && (
+                  <div className="meta">Click the first point on the canvas.</div>
+                )}
+                {mode === "calibrate" && calibPick && !calibPick.p2 && (
+                  <div className="meta">Click the second point on the canvas.</div>
+                )}
+                {calibPick && calibPick.p2 && (
+                  <>
+                    <div className="meta">
+                      Measured span: {planDistance(calibPick.p1, calibPick.p2).toFixed(2)} m
+                      (current scale).
+                    </div>
+                    <label className="design-field">
+                      <span>Real length</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={calibValue}
+                        onChange={(e) => setCalibValue(e.target.value)}
+                        placeholder="e.g. 3"
+                        aria-label="Known real length value"
+                      />
+                    </label>
+                    <label className="design-field">
+                      <span>Unit</span>
+                      <select
+                        value={calibUnit}
+                        onChange={(e) =>
+                          setCalibUnit(e.target.value === "m" ? "m" : "ft")
+                        }
+                        aria-label="Known length unit"
+                      >
+                        <option value="ft">feet (ft)</option>
+                        <option value="m">meters (m)</option>
+                      </select>
+                    </label>
+                    <label className="design-field design-check">
+                      <input
+                        type="checkbox"
+                        checked={calibRescaleWalls}
+                        onChange={(e) => setCalibRescaleWalls(e.target.checked)}
+                        aria-label="Also rescale already-drawn walls"
+                      />
+                      <span>Also rescale already-drawn walls</span>
+                    </label>
+                    <div className="design-toolbar">
+                      <button
+                        type="button"
+                        className="tool-btn active"
+                        onClick={applyCalibration}
+                        disabled={
+                          !Number.isFinite(
+                            scaleFactor(
+                              planDistance(calibPick.p1, calibPick.p2),
+                              metersFrom(Number(calibValue), calibUnit),
+                            ),
+                          )
+                        }
+                      >
+                        Set scale
+                      </button>
+                      <button type="button" className="tool-btn" onClick={cancelCalibration}>
+                        Reset picks
+                      </button>
+                    </div>
+                  </>
+                )}
+                {calibReadout && <div className="meta">{calibReadout}</div>}
+              </fieldset>
+            )}
+
+            {/* Geometry JSON import */}
+            <fieldset className="design-edit-group">
+              <legend>Import floor plan (JSON)</legend>
+              <p className="meta">
+                Load a building-model geometry JSON (e.g. a CubiCasa / Matterport
+                export, or a published <code>building_models.geometry</code>). Its
+                walls become editable wall segments.
+              </p>
+              <label className="design-field">
+                <span>Import geometry</span>
+                <input
+                  ref={geometryInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={onGeometryFile}
+                  aria-label="Import floor plan geometry JSON"
+                />
+              </label>
+              {importError && (
+                <div className="card design-error">
+                  <h3>Couldn’t import</h3>
+                  <div className="meta">{importError}</div>
+                </div>
+              )}
+            </fieldset>
+          </div>
+
           {mode === "furniture" && (
             <div className="card design-panel">
               <h3>Place furniture</h3>

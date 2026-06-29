@@ -151,6 +151,35 @@ nav.tiles a.card:hover { border-color: var(--accent); }
 .design-wall-anchor { fill: var(--accent); }
 .design-cursor { fill: rgba(255, 255, 255, 0.5); }
 
+/* Blueprint underlay (tracing aid) + scale-calibration overlay. */
+.design-underlay { pointer-events: none; }
+.design-calib-line { stroke: var(--advisory); stroke-width: 2; stroke-dasharray: 5 4; }
+.design-calib-pt { fill: var(--advisory); stroke: var(--canvas-bg); stroke-width: 1.5; }
+
+/* File inputs + an inline checkbox row inside design fields. */
+.design-field input[type="file"] {
+  background: var(--inset-bg);
+  color: var(--on-surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 12px;
+}
+.design-field input[type="file"]::file-selector-button {
+  background: var(--fill-subtle);
+  color: var(--on-surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 7px;
+  padding: 4px 9px;
+  margin-right: 9px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.design-field.design-check {
+  flex-direction: row; align-items: center; gap: 8px;
+}
+.design-field.design-check input[type="checkbox"] { accent-color: var(--accent); }
+
 /* Default furniture is neutral; selection is the only accent state. */
 .design-item { cursor: pointer; }
 .design-item-rect { fill: var(--fill-subtle); stroke: var(--on-surface-muted); stroke-width: 1.5; }
