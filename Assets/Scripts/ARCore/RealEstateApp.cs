@@ -94,6 +94,7 @@ namespace SuperRealEstate.ARCore
         private EdgeFunctionVoiceAgent _voiceAgent;
         private EdgeFunctionPropertyData _propertyData;
         private EdgeFunctionCaptureService _captureService;
+        private SupabaseStorageUploader _storageUploader;
 
         /// <summary>A fixed lat/lng when <c>provideTestLocation</c> is set, else (null,null).</summary>
         private (double?, double?) CurrentLocation()
@@ -136,10 +137,22 @@ namespace SuperRealEstate.ARCore
         private void ConfigureCapture()
         {
             if (furnitureCaptureController == null) return;
+
+#if (UNITY_IOS || UNITY_VISIONOS) && !UNITY_EDITOR
+            // Prefer on-device Object Capture (private, highest quality) when supported.
+            if (AppleObjectCaptureService.Supported)
+            {
+                furnitureCaptureController.Configure(new AppleObjectCaptureService());
+                return;
+            }
+#endif
+
             if (!string.IsNullOrEmpty(supabaseUrl))
             {
                 _captureService = new EdgeFunctionCaptureService(supabaseUrl, supabaseAnonKey);
+                _storageUploader = new SupabaseStorageUploader(supabaseUrl, supabaseAnonKey);
                 furnitureCaptureController.Configure(_captureService);
+                furnitureCaptureController.SetStorage(_storageUploader);
             }
             else
             {
@@ -218,6 +231,7 @@ namespace SuperRealEstate.ARCore
             _voiceAgent?.SetAccessToken(token);
             _propertyData?.SetAccessToken(token);
             _captureService?.SetAccessToken(token);
+            _storageUploader?.SetAccessToken(token);
             // Attribute captured furniture to the signed-in user (storage/RLS).
             if (furnitureCaptureController != null && Sessions != null)
                 furnitureCaptureController.OwnerId = Sessions.UserId;

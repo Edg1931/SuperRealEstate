@@ -76,10 +76,26 @@ CaptureSession  ──photos+poses──▶ IFurnitureCaptureService ──▶ f
   right away), attributed to the user via RLS. A reconstruction worker fills in
   the real mesh + flips the job to `ready` later.
 
-### Next (the remaining platform/worker pieces)
-- **Apple Object Capture plugin** (`PhotogrammetrySession`, like the speech `.mm`)
-  → on-device USDZ on iOS/visionOS for the highest-quality, private path.
-- **Photo upload to Storage** (signed URLs) + the **reconstruction worker** that
-  consumes them and writes back `model_url`/thumbnail.
-- **Library + placement UI**: the captured asset in the user's furniture library;
-  place it via `Staging` with the live fit check; share into a session.
+### Also built (the three follow-ups)
+- **Apple Object Capture (on-device)** — `Assets/Plugins/iOS/SREObjectCapture.swift`
+  (RealityKit `PhotogrammetrySession` → USDZ) + `AppleObjectCaptureService.cs`
+  (guarded, hardware-gated via `Supported`). `RealEstateApp` prefers it on
+  iOS/visionOS; photos never leave the device. (Verify the async output handling
+  on device.)
+- **Photo upload + reconstruction worker** — `SupabaseStorageUploader` uploads the
+  JPEGs under a per-capture prefix; the prefix flows to `furniture-capture`
+  (stored as `photo_prefix`). A **`complete-capture` Edge Function** is the worker
+  callback: an external reconstruction worker (polls `processing` jobs, fetches the
+  photos, builds the mesh) posts the `model_url`/thumbnail back with a shared
+  secret + service role → flips the job to `ready` and fills the library asset.
+- **Furniture library + fit check** — web `/library` page (browse captures,
+  dimensions, "fits a standard door" badge + a custom-opening checker) and the AR
+  `FurniturePlacementController`: place a captured piece **to-scale** in a real
+  room and see it **green when it fits / amber when it doesn't** (via
+  `Staging.FitChecker`).
+
+### Remaining
+- The **reconstruction worker itself** (external service that turns photos into a
+  mesh — RealityCapture/Meshroom/a hosted API); the callback + storage are ready.
+- Create the private **`furniture` Storage bucket** (owner-scoped policies).
+- Swap the placement **box for the real USDZ/glTF mesh** once `model_url` is set.

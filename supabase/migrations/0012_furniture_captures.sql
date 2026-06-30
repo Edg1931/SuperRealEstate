@@ -16,6 +16,7 @@ create table if not exists public.furniture_captures (
     status             text not null default 'capturing'
                        check (status in ('capturing','processing','ready','failed')),
     photo_count        integer not null default 0,
+    photo_prefix       text,   -- Storage path prefix the photos uploaded under
 
     -- Metric bounds (meters) measured from AR at capture time → true-scale fit.
     width_m            numeric(6,3),

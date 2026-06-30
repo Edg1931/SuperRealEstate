@@ -27,6 +27,7 @@ interface RequestBody {
   name?: string;
   method?: string;
   photoCount?: number;
+  storagePrefix?: string;
   widthM?: number;
   depthM?: number;
   heightM?: number;
@@ -94,6 +95,7 @@ Deno.serve(async (req: Request) => {
         method,
         status: "processing",
         photo_count: Math.max(0, Math.trunc(body.photoCount ?? 0)),
+        photo_prefix: typeof body.storagePrefix === "string" ? body.storagePrefix.slice(0, 300) : null,
         width_m: widthM,
         depth_m: depthM,
         height_m: heightM,

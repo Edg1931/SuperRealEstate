@@ -49,6 +49,8 @@ namespace SuperRealEstate.ARCore
 
         private CaptureSession _session;
         private IFurnitureCaptureService _service;
+        private SupabaseStorageUploader _uploader;
+        private string _bucket = "furniture";
         private Vector3 _objectCenter;
         private bool _hasCenter;
         private float _lastShotAzimuth;
@@ -65,6 +67,13 @@ namespace SuperRealEstate.ARCore
 
         /// <summary>Inject the reconstruction backend (Apple Object Capture / cloud / local).</summary>
         public void Configure(IFurnitureCaptureService service) => _service = service;
+
+        /// <summary>Inject a storage uploader so photos are uploaded for the reconstruction worker.</summary>
+        public void SetStorage(SupabaseStorageUploader uploader, string bucket = "furniture")
+        {
+            _uploader = uploader;
+            if (!string.IsNullOrEmpty(bucket)) _bucket = bucket;
+        }
 
         /// <summary>Place the object center (e.g. a reticle hit on the floor at the furniture).</summary>
         public void SetObjectCenter(Vector3 worldCenter) { _objectCenter = worldCenter; _hasCenter = true; }
@@ -123,6 +132,16 @@ namespace SuperRealEstate.ARCore
             try
             {
                 CaptureSubmission submission = _session.BuildSubmission(OwnerId, preferredMethod);
+
+                // Upload the photos so the reconstruction worker can fetch them.
+                if (_uploader != null && submission.Photos.Count > 0)
+                {
+                    string prefix = $"{(string.IsNullOrEmpty(OwnerId) ? "anon" : OwnerId)}/{Guid.NewGuid():N}";
+                    await _uploader.UploadPhotosAsync(_bucket, prefix, submission.Photos, ct);
+                    submission.StoragePrefix = prefix;
+                    OnInfo.Invoke("Photos uploaded — building your model…");
+                }
+
                 FurnitureCaptureResult result = await _service.ReconstructAsync(submission, ct);
                 _session.MarkReady(result);
                 OnCaptured.Invoke(result);

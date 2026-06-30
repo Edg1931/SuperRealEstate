@@ -88,6 +88,8 @@ namespace SuperRealEstate.Capture
         public CaptureBounds? MetricBounds;
         /// <summary>Optional owner id for storage/RLS attribution.</summary>
         public string OwnerId;
+        /// <summary>Storage path prefix the photos were uploaded under (for the reconstruction worker).</summary>
+        public string StoragePrefix;
     }
 
     /// <summary>

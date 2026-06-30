@@ -66,6 +66,7 @@ namespace SuperRealEstate.ARCore
                 name = submission.Name,
                 method = MethodString(submission.PreferredMethod),
                 photoCount = submission.Photos?.Count ?? 0,
+                storagePrefix = submission.StoragePrefix,
                 widthM = b.WidthM, depthM = b.DepthM, heightM = b.HeightM,
             };
             string body = JsonUtility.ToJson(dto);
@@ -114,7 +115,7 @@ namespace SuperRealEstate.ARCore
         };
 
         [Serializable] private sealed class RequestDto {
-            public string name, method; public int photoCount; public float widthM, depthM, heightM; }
+            public string name, method, storagePrefix; public int photoCount; public float widthM, depthM, heightM; }
         [Serializable] private sealed class ResponseDto {
             public string assetId, captureId, name, modelUrl, thumbnailUrl, status; public float widthM, depthM, heightM; }
     }
