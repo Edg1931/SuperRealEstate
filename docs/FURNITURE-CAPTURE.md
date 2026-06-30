@@ -62,14 +62,24 @@ CaptureSession  ──photos+poses──▶ IFurnitureCaptureService ──▶ f
   the existing `furniture_assets` library (already supports `object_capture` /
   `photogrammetry` / `lidar` / `gaussian_splat`).
 
-### Next (platform-specific — slots into the contract)
+### Also built (this pass)
 - **`FurnitureCaptureController`** (Unity mobile): drives `CaptureSession` from
-  `ARCameraFrameProvider` (photos) + the AR camera pose (view angles) + AR depth
-  (metric bounds); shows the coverage coach; on ready calls the service.
+  `ArCameraFrameProvider` (photos) + the AR camera pose (view angles via the
+  tested `CaptureMath`), auto-snapping a shot each time the user orbits into a new
+  sector, surfacing live coverage + coaching, and on finish calling the service.
+  Wired in `RealEstateApp` (cloud service when configured, else local).
+- **`CaptureServices`**: `LocalCaptureService` (offline/Editor — returns a
+  to-scale box from the AR bounds so the loop runs now) and
+  `EdgeFunctionCaptureService` (submits metadata + bounds to the cloud function).
+- **`furniture-capture` Edge Function**: records the job AND creates a **to-scale
+  `furniture_assets` entry immediately** (correct dimensions → the fit check works
+  right away), attributed to the user via RLS. A reconstruction worker fills in
+  the real mesh + flips the job to `ready` later.
+
+### Next (the remaining platform/worker pieces)
 - **Apple Object Capture plugin** (`PhotogrammetrySession`, like the speech `.mm`)
-  → on-device USDZ on iOS/visionOS.
-- **Cloud reconstruction Edge Function** (Android/fallback): upload photos to
-  Storage → trigger a photogrammetry service → write back `model_url` + bounds →
-  flip the job to `ready`.
+  → on-device USDZ on iOS/visionOS for the highest-quality, private path.
+- **Photo upload to Storage** (signed URLs) + the **reconstruction worker** that
+  consumes them and writes back `model_url`/thumbnail.
 - **Library + placement UI**: the captured asset in the user's furniture library;
   place it via `Staging` with the live fit check; share into a session.

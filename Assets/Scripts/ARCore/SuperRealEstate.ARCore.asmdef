@@ -26,6 +26,7 @@
         "SuperRealEstate.PropertyData",
         "SuperRealEstate.Overlays",
         "SuperRealEstate.Construction",
+        "SuperRealEstate.Capture",
         "SuperRealEstate.AppCore"
     ],
     "includePlatforms": [],

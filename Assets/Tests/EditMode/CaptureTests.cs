@@ -54,6 +54,34 @@ namespace SuperRealEstate.Tests
         }
     }
 
+    public class CaptureMathTests
+    {
+        private const float Tol = 0.5f;
+
+        [Test]
+        public void CameraNorthOfObject_IsAzimuthZero()
+        {
+            // Object at origin, camera 2 m north (+Z), same height.
+            var v = CaptureMath.ViewFrom(0f, 0f, 0f, 0f, 0f, 2f);
+            Assert.That(v.AzimuthDeg, Is.EqualTo(0f).Within(Tol));
+            Assert.That(v.ElevationDeg, Is.EqualTo(0f).Within(Tol));
+        }
+
+        [Test]
+        public void CameraEastOfObject_IsAzimuth90()
+        {
+            var v = CaptureMath.ViewFrom(0f, 0f, 0f, 2f, 0f, 0f); // +X
+            Assert.That(v.AzimuthDeg, Is.EqualTo(90f).Within(Tol));
+        }
+
+        [Test]
+        public void CameraAbove_HasHighElevation()
+        {
+            var v = CaptureMath.ViewFrom(0f, 0f, 0f, 0.01f, 2f, 0.01f);
+            Assert.Greater(v.ElevationDeg, 80f);
+        }
+    }
+
     public class CaptureBoundsTests
     {
         [Test]

@@ -64,6 +64,10 @@ namespace SuperRealEstate.ARCore
         [SerializeField] private double testLatitude;
         [SerializeField] private double testLongitude;
 
+        [Header("Furniture capture (optional)")]
+        [Tooltip("Photogrammetry capture of a client's furniture (phone AR).")]
+        [SerializeField] private FurnitureCaptureController furnitureCaptureController;
+
         [Header("Auth + consent (optional)")]
         [Tooltip("Gates capture (camera/scan) behind the user's granted consents.")]
         [SerializeField] private ConsentService consentService;
@@ -89,6 +93,7 @@ namespace SuperRealEstate.ARCore
         private EdgeFunctionPlantIdentifier _plantIdentifier;
         private EdgeFunctionVoiceAgent _voiceAgent;
         private EdgeFunctionPropertyData _propertyData;
+        private EdgeFunctionCaptureService _captureService;
 
         /// <summary>A fixed lat/lng when <c>provideTestLocation</c> is set, else (null,null).</summary>
         private (double?, double?) CurrentLocation()
@@ -120,6 +125,26 @@ namespace SuperRealEstate.ARCore
             }
 
             ConfigureSceneActions();
+            ConfigureCapture();
+        }
+
+        /// <summary>
+        /// Wire the furniture-capture controller to a reconstruction backend: the
+        /// cloud <c>furniture-capture</c> Edge Function when Supabase is configured,
+        /// else a local placeholder so the capture loop still runs.
+        /// </summary>
+        private void ConfigureCapture()
+        {
+            if (furnitureCaptureController == null) return;
+            if (!string.IsNullOrEmpty(supabaseUrl))
+            {
+                _captureService = new EdgeFunctionCaptureService(supabaseUrl, supabaseAnonKey);
+                furnitureCaptureController.Configure(_captureService);
+            }
+            else
+            {
+                furnitureCaptureController.Configure(new LocalCaptureService());
+            }
         }
 
         /// <summary>
@@ -192,6 +217,10 @@ namespace SuperRealEstate.ARCore
             _plantIdentifier?.SetAccessToken(token);
             _voiceAgent?.SetAccessToken(token);
             _propertyData?.SetAccessToken(token);
+            _captureService?.SetAccessToken(token);
+            // Attribute captured furniture to the signed-in user (storage/RLS).
+            if (furnitureCaptureController != null && Sessions != null)
+                furnitureCaptureController.OwnerId = Sessions.UserId;
         }
 
         /// <summary>
