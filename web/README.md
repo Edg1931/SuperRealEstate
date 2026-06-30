@@ -81,6 +81,36 @@ The blueprint calibration math (`metersFrom`, `scaleFactor`, `rescaleUnderlay`,
 `rescaleWall`) and geometry import (`parseGeometryWalls`) live as pure,
 DOM-free helpers in `lib/blueprint.ts`.
 
+## Furniture library (`/library`)
+
+A signed-in account page listing the furniture you've captured in the AR app.
+It reads two RLS-scoped tables (owner = `auth.uid()`):
+
+- `furniture_assets` — the finished library (newest first): name, category,
+  metric `width_m / depth_m / height_m`, `model_url`, `thumbnail_url`, and
+  `capture_method` (`object_capture` / `photogrammetry` / `lidar` /
+  `gaussian_splat` / `catalog` / `manual`).
+- `furniture_captures` — in-progress/failed jobs (`status` in
+  `capturing` / `processing` / `failed`; `ready` ones already appear as assets).
+
+Each asset renders as a card with a thumbnail (or a neutral placeholder),
+dimensions (`formatDims`, meters with a feet equivalent), the capture method as a
+pill, the created date, and a **"Fits a standard door ✓/✗"** badge. A
+**door-fit checker** panel takes a custom opening (width × height, ft or m) and
+re-evaluates every item against it — adding a per-card badge and an optional
+"only show what fits" filter. Active capture jobs show as cards with a status
+pill (processing = accent, failed = danger) so a capture being built is visible.
+
+The fit math lives as pure, DOM-free helpers in `lib/furniture.ts`
+(`fitsThroughOpening`, `footprintSqM`, `volumeM3`, `formatDims`, `STANDARD_DOOR`)
+and is the web mirror of the C# `CaptureBounds.FitsThroughOpening` in
+`Assets/Scripts/Capture/FurnitureCapture.cs`: sort the object's three dims
+ascending and the opening's two ascending; it fits iff the object's two smallest
+dimensions each clear the opening's two (lead with the smallest face,
+allowing it to be turned/tilted). `STANDARD_DOOR` is 32″ × 80″ (0.81 m × 2.03 m).
+The page **requires sign-in** (Supabase Auth magic link) via the reusable
+`lib/useAuth.ts` hook.
+
 ## My projects (`/projects`)
 
 A signed-in account page listing your `renovation_projects` (newest first), each
