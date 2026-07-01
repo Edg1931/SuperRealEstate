@@ -31,7 +31,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const secret = Deno.env.get("CAPTURE_WORKER_SECRET");
-    if (!secret || req.headers.get("x-worker-secret") !== secret) {
+    const presented = req.headers.get("x-worker-secret") ?? "";
+    if (!secret || !timingSafeEqual(presented, secret)) {
       throw new GuardError(401, "Invalid worker credentials");
     }
 
@@ -68,6 +69,10 @@ Deno.serve(async (req: Request) => {
         { status: 502, headers: jsonHeaders() });
     }
     const job = (await jobRes.json())?.[0];
+    if (!job) {
+      // PostgREST returns 200 with [] when the filter matched nothing.
+      return new Response(JSON.stringify({ error: "unknown captureId" }), { status: 404, headers: jsonHeaders() });
+    }
 
     // Fill the model onto the library asset, if any and if reconstruction succeeded.
     if (status === "ready" && job?.furniture_asset_id) {
@@ -86,3 +91,13 @@ Deno.serve(async (req: Request) => {
     return toResponse(err);
   }
 });
+
+// Constant-time string compare (avoids the !== early-exit timing side channel).
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ab = enc.encode(a), bb = enc.encode(b);
+  let diff = ab.length ^ bb.length;
+  const n = Math.max(ab.length, bb.length);
+  for (let i = 0; i < n; i++) diff |= (ab[i] ?? 0) ^ (bb[i] ?? 0);
+  return diff === 0;
+}

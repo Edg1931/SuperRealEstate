@@ -73,9 +73,17 @@ Deno.serve(async (req: Request) => {
     let value: Record<string, unknown> | null = null;
     let rent: Record<string, unknown> | null = null;
 
-    const valueResp = await fetch(`${RENTCAST_BASE}/avm/value?${params.toString()}`, {
-      headers: { "X-Api-Key": apiKey, accept: "application/json" },
-    });
+    let valueResp: Response;
+    try {
+      valueResp = await fetch(`${RENTCAST_BASE}/avm/value?${params.toString()}`, {
+        headers: { "X-Api-Key": apiKey, accept: "application/json" },
+      });
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: `RentCast value fetch failed: ${err instanceof Error ? err.message : String(err)}` }),
+        { status: 502, headers: jsonHeaders() },
+      );
+    }
     if (valueResp.ok) {
       value = await valueResp.json().catch(() => null);
     } else {
@@ -86,11 +94,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Rent estimate is best-effort; if it fails we still return the value AVM.
-    const rentResp = await fetch(`${RENTCAST_BASE}/avm/rent/long-term?${params.toString()}`, {
-      headers: { "X-Api-Key": apiKey, accept: "application/json" },
-    });
-    if (rentResp.ok) rent = await rentResp.json().catch(() => null);
+    // Rent estimate is best-effort; any failure (HTTP or thrown) still returns the value AVM.
+    try {
+      const rentResp = await fetch(`${RENTCAST_BASE}/avm/rent/long-term?${params.toString()}`, {
+        headers: { "X-Api-Key": apiKey, accept: "application/json" },
+      });
+      if (rentResp.ok) rent = await rentResp.json().catch(() => null);
+    } catch {
+      rent = null;
+    }
 
     const valuation: PropertyValuation = {
       estimate: num(value?.price ?? value?.value ?? value?.estimate),

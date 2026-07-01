@@ -54,6 +54,18 @@ Deno.serve(async (req: Request) => {
     const name = (body.name ?? "Furniture").trim() || "Furniture";
     const widthM = num(body.widthM), depthM = num(body.depthM), heightM = num(body.heightM);
 
+    // The reconstruction worker later reads photos from this prefix with the
+    // service role (bypassing storage RLS), so NEVER trust a client-named path:
+    // it must live under the caller's own folder, with no traversal.
+    let photoPrefix: string | null = null;
+    if (typeof body.storagePrefix === "string" && body.storagePrefix.length > 0) {
+      const p = body.storagePrefix.slice(0, 300);
+      if (!p.startsWith(`${userId}/`) || p.includes("..") || p.includes("//")) {
+        throw new GuardError(400, "storagePrefix must be under your own user folder");
+      }
+      photoPrefix = p;
+    }
+
     const url = Deno.env.get("SUPABASE_URL");
     if (!url) throw new GuardError(500, "SUPABASE_URL not configured");
 
@@ -95,7 +107,7 @@ Deno.serve(async (req: Request) => {
         method,
         status: "processing",
         photo_count: Math.max(0, Math.trunc(body.photoCount ?? 0)),
-        photo_prefix: typeof body.storagePrefix === "string" ? body.storagePrefix.slice(0, 300) : null,
+        photo_prefix: photoPrefix,
         width_m: widthM,
         depth_m: depthM,
         height_m: heightM,
