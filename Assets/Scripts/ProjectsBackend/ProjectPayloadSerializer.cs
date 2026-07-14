@@ -66,7 +66,8 @@ namespace SuperRealEstate.ProjectsBackend
                         plan_y = bp.PlanPosition.y,
                         plan_yaw_deg = bp.PlanYawDegrees,
                         scale = bp.Scale,
-                        hasPlan = true, // disambiguates a placement legitimately at plan origin
+                        hasPlan = true,  // disambiguates a placement legitimately at plan origin
+                        has_plan = true, // DB column spelling (migration 0014)
                     });
                 }
             }

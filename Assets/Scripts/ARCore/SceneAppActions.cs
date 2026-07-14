@@ -15,6 +15,7 @@ using SuperRealEstate.Projects;
 using SuperRealEstate.PropertyData;
 using SuperRealEstate.Renovation;
 using SuperRealEstate.RoomMeasure;
+using SuperRealEstate.Services;
 using SuperRealEstate.Staging;
 
 namespace SuperRealEstate.ARCore
@@ -73,6 +74,10 @@ namespace SuperRealEstate.ARCore
         // Staging: an in-scene renderer + the running set of staged items.
         private IStagedSceneRenderer _stagedRenderer;
         private readonly List<Placement> _stagedItems = new List<Placement>();
+
+        // AI staging director + the backend that lists stageable items.
+        private EdgeFunctionStagingDirector _director;
+        private IBackendClient _backend;
 
         // Renovation: portal renderer + the model whose walls can be "removed".
         private IPortalRenderer _portalRenderer;
@@ -139,6 +144,17 @@ namespace SuperRealEstate.ARCore
 
         /// <summary>Inject the staged-scene renderer so <see cref="StageFurnitureAsync"/> can place items.</summary>
         public void ConfigureStaging(IStagedSceneRenderer stagedRenderer) => _stagedRenderer = stagedRenderer;
+
+        /// <summary>
+        /// Inject the AI staging director + the backend that lists stageable
+        /// items (catalog + the user's captured furniture) so
+        /// <see cref="AutoStageAsync"/> can stage a whole room on request.
+        /// </summary>
+        public void ConfigureDirector(EdgeFunctionStagingDirector director, IBackendClient backend)
+        {
+            _director = director;
+            _backend = backend;
+        }
 
         /// <summary>
         /// Set the active building model whose walls can be virtually removed.
@@ -473,6 +489,85 @@ namespace SuperRealEstate.ARCore
         {
             _stagedItems.Clear();
             _stagedRenderer?.Render(new StagedScene());
+        }
+
+        /// <inheritdoc />
+        public async Task AutoStageAsync(string style, CancellationToken ct = default)
+        {
+            if (_director == null || _stagedRenderer == null)
+            {
+                OnInfo.Invoke("AI staging isn't set up");
+                return;
+            }
+
+            // The director validates against real geometry — no measured room, no
+            // plan. Capturing one on the fly is gated by the same consent as an
+            // explicit measure.
+            IReadOnlyList<Vector3> outline = roomMeasure != null ? roomMeasure.LastOutline : null;
+            if ((outline == null || outline.Count < 3) && roomMeasure != null
+                && ConsentOk(CaptureAction.MeasureRoom)
+                && roomMeasure.CaptureRoom(out RoomMeasurements m))
+            {
+                _lastMeasurements = m;
+                outline = roomMeasure.LastOutline;
+            }
+            if (outline == null || outline.Count < 3)
+            {
+                OnInfo.Invoke("Measure the room first, then I can stage it.");
+                return;
+            }
+
+            OnInfo.Invoke("Designing a layout for this room…");
+            try
+            {
+                // Offer the client's own furniture first (that's the point), then catalog.
+                var items = new List<StagingDirector.DirectorItem>();
+                if (_backend != null)
+                {
+                    try
+                    {
+                        foreach (var f in await _backend.GetMyFurnitureAsync(40, ct))
+                            if (f.Size.x > 0f && f.Size.z > 0f) items.Add(StagingDirector.DirectorItem.From(f));
+                        foreach (var c in await _backend.GetCatalogItemsAsync(60, ct))
+                            if (c.Size.x > 0f && c.Size.z > 0f) items.Add(StagingDirector.DirectorItem.From(c));
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"[AutoStage] item listing failed: {e.Message}");
+                    }
+                }
+                if (items.Count == 0)
+                {
+                    OnInfo.Invoke("There's nothing to stage with yet — capture some furniture or add catalog items.");
+                    return;
+                }
+
+                StagingDirector.ValidatedStaging plan = await _director.StageAsync(style, outline, items, ct);
+                if (plan.Accepted.Count == 0)
+                {
+                    OnInfo.Invoke(string.IsNullOrEmpty(plan.Summary)
+                        ? "I couldn't fit a layout in this room."
+                        : plan.Summary);
+                    return;
+                }
+
+                _stagedItems.Clear();
+                _stagedItems.AddRange(plan.Accepted);
+                _stagedRenderer.Render(new StagedScene { Placements = new List<Placement>(_stagedItems) });
+
+                string summary = string.IsNullOrEmpty(plan.Summary) ? "Staged the room." : plan.Summary;
+                if (plan.CatalogCostUsd > 0f)
+                    summary += $" Catalog items add up to about {plan.CatalogCostUsd.ToString("C0", CultureInfo.GetCultureInfo("en-US"))}.";
+                if (plan.Rejected.Count > 0)
+                    summary += $" {plan.Rejected.Count} piece{(plan.Rejected.Count == 1 ? "" : "s")} didn't fit and {(plan.Rejected.Count == 1 ? "was" : "were")} left out.";
+                OnInfo.Invoke(summary);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[AutoStage] failed: {e.Message}");
+                OnInfo.Invoke("I couldn't reach the staging director right now.");
+            }
         }
 
         /// <inheritdoc />

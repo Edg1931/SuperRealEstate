@@ -37,6 +37,13 @@ namespace SuperRealEstate.ARCore
         [Tooltip("Raised when a room is captured and measured.")]
         public RoomMeasuredEvent OnRoomMeasured = new RoomMeasuredEvent();
 
+        /// <summary>
+        /// The floor outline (world-space, meters) from the last successful
+        /// <see cref="CaptureRoom"/> — the geometry fit checks and the staging
+        /// director validate against. Null until a room has been captured.
+        /// </summary>
+        public IReadOnlyList<Vector3> LastOutline { get; private set; }
+
         private void Reset() => planeManager = GetComponent<ARPlaneManager>();
         private void Awake() { if (planeManager == null) planeManager = GetComponent<ARPlaneManager>(); }
 
@@ -60,6 +67,7 @@ namespace SuperRealEstate.ARCore
 
             if (!room.IsValid) return false;
 
+            LastOutline = room.FloorOutline;
             measurements = MeasurementService.Compute(room);
             OnRoomMeasured.Invoke(measurements);
             return true;

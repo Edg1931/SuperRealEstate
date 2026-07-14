@@ -80,6 +80,44 @@ namespace SuperRealEstate.Services
             return list;
         }
 
+        public async Task<IReadOnlyList<CatalogItem>> GetCatalogItemsAsync(int limit = 60, CancellationToken ct = default)
+        {
+            string q = "/vendor_catalog_items?select=id,vendor_id,sku,name,category,width_m,depth_m,height_m,model_url,thumbnail_url,price,currency" +
+                       $"&order=category&limit={Mathf.Clamp(limit, 1, 200)}";
+            string json = await Get(q, ct);
+            var rows = JsonUtility.FromJson<CatalogRowList>(Wrap(json));
+            var list = new List<CatalogItem>();
+            if (rows?.items != null)
+                foreach (var r in rows.items)
+                    list.Add(new CatalogItem
+                    {
+                        Id = r.id, VendorId = r.vendor_id, Sku = r.sku, Name = r.name, Category = r.category,
+                        Size = new Vector3(r.width_m, r.height_m, r.depth_m),
+                        ModelUrl = r.model_url, ThumbnailUrl = r.thumbnail_url, Price = r.price, Currency = r.currency,
+                    });
+            return list;
+        }
+
+        public async Task<IReadOnlyList<FurnitureAsset>> GetMyFurnitureAsync(int limit = 40, CancellationToken ct = default)
+        {
+            // RLS scopes the read to the signed-in owner; anon token yields [].
+            string q = "/furniture_assets?select=id,owner_id,name,category,width_m,depth_m,height_m,model_url,thumbnail_url,capture_method" +
+                       $"&order=created_at.desc&limit={Mathf.Clamp(limit, 1, 200)}";
+            string json = await Get(q, ct);
+            var rows = JsonUtility.FromJson<FurnitureRowList>(Wrap(json));
+            var list = new List<FurnitureAsset>();
+            if (rows?.items != null)
+                foreach (var r in rows.items)
+                    list.Add(new FurnitureAsset
+                    {
+                        Id = r.id, OwnerId = r.owner_id, Name = r.name, Category = r.category,
+                        Size = new Vector3(r.width_m, r.height_m, r.depth_m),
+                        ModelUrl = r.model_url, ThumbnailUrl = r.thumbnail_url,
+                        CaptureMethod = ParseCaptureMethod(r.capture_method),
+                    });
+            return list;
+        }
+
         public async Task<string> SaveRoomAsync(RoomRecord room, CancellationToken ct = default)
         {
             if (room == null) throw new ArgumentNullException(nameof(room));
@@ -156,6 +194,16 @@ namespace SuperRealEstate.Services
         private static string Wrap(string jsonArray)
             => "{\"items\":" + (string.IsNullOrEmpty(jsonArray) ? "[]" : jsonArray) + "}";
 
+        private static CaptureMethod ParseCaptureMethod(string m) => m switch
+        {
+            "object_capture" => CaptureMethod.ObjectCapture,
+            "photogrammetry" => CaptureMethod.Photogrammetry,
+            "lidar" => CaptureMethod.Lidar,
+            "gaussian_splat" => CaptureMethod.GaussianSplat,
+            "catalog" => CaptureMethod.Catalog,
+            _ => CaptureMethod.Manual,
+        };
+
         private static MaterialUnit ParseUnit(string u) => u switch
         {
             "per_sqft" => MaterialUnit.PerSquareFoot,
@@ -175,6 +223,10 @@ namespace SuperRealEstate.Services
         [Serializable] private sealed class CatalogRow {
             public string id, vendor_id, sku, name, category, model_url, thumbnail_url, currency;
             public float width_m, depth_m, height_m, price; }
+        [Serializable] private sealed class FurnitureRowList { public FurnitureRow[] items; }
+        [Serializable] private sealed class FurnitureRow {
+            public string id, owner_id, name, category, model_url, thumbnail_url, capture_method;
+            public float width_m, depth_m, height_m; }
         [Serializable] private sealed class RoomIdList { public RoomId[] items; }
         [Serializable] private sealed class RoomId { public string id; }
 

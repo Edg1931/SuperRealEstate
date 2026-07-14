@@ -134,9 +134,12 @@ namespace SuperRealEstate.ARCore
                 CaptureSubmission submission = _session.BuildSubmission(OwnerId, preferredMethod);
 
                 // Upload the photos so the reconstruction worker can fetch them.
-                if (_uploader != null && submission.Photos.Count > 0)
+                // Storage RLS + the capture function both require the prefix to
+                // live under the signed-in user's folder, so skip the upload when
+                // signed out (the local/on-device path still works).
+                if (_uploader != null && submission.Photos.Count > 0 && !string.IsNullOrEmpty(OwnerId))
                 {
-                    string prefix = $"{(string.IsNullOrEmpty(OwnerId) ? "anon" : OwnerId)}/{Guid.NewGuid():N}";
+                    string prefix = $"{OwnerId}/{Guid.NewGuid():N}";
                     await _uploader.UploadPhotosAsync(_bucket, prefix, submission.Photos, ct);
                     submission.StoragePrefix = prefix;
                     OnInfo.Invoke("Photos uploaded — building your model…");

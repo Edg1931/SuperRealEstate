@@ -97,5 +97,15 @@ CaptureSession  ──photos+poses──▶ IFurnitureCaptureService ──▶ f
 ### Remaining
 - The **reconstruction worker itself** (external service that turns photos into a
   mesh — RealityCapture/Meshroom/a hosted API); the callback + storage are ready.
-- Create the private **`furniture` Storage bucket** (owner-scoped policies).
 - Swap the placement **box for the real USDZ/glTF mesh** once `model_url` is set.
+
+### Security (audited)
+- Migration `0013` creates the private **`furniture` bucket** and owner-scoped
+  `storage.objects` policies (first path folder must equal `auth.uid()`), so
+  photos are private per-user at the database level, not just by convention.
+- `furniture-capture` **rejects any `storagePrefix` outside the caller's own
+  user folder** — the reconstruction worker reads that prefix with the service
+  role, so a client-named path would otherwise let one user point the worker at
+  another user's photos.
+- `complete-capture` compares the worker secret in constant time and 404s on an
+  unknown capture id.

@@ -17,6 +17,15 @@ namespace SuperRealEstate.App
         Task RecognizeFinishAsync(CancellationToken ct = default);
         Task RemoveWallAsync(string wallId, CancellationToken ct = default);
         Task StageFurnitureAsync(string item, CancellationToken ct = default);
+
+        /// <summary>
+        /// AI-stage the whole room: the staging director proposes a layout from
+        /// the catalog + the user's own captured furniture, validated against the
+        /// measured room geometry. <paramref name="style"/> is a free-text brief
+        /// ("warm modern", "family friendly"); empty means a neutral default.
+        /// </summary>
+        Task AutoStageAsync(string style, CancellationToken ct = default);
+
         Task ShowCompsAsync(CancellationToken ct = default);
     }
 }

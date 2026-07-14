@@ -11,6 +11,7 @@ using SuperRealEstate.ProjectsBackend;
 using SuperRealEstate.PropertyData;
 using SuperRealEstate.RoomMeasure;
 using SuperRealEstate.Services;
+using SuperRealEstate.Staging;
 using SuperRealEstate.Voice;
 
 namespace SuperRealEstate.ARCore
@@ -95,6 +96,7 @@ namespace SuperRealEstate.ARCore
         private EdgeFunctionPropertyData _propertyData;
         private EdgeFunctionCaptureService _captureService;
         private SupabaseStorageUploader _storageUploader;
+        private EdgeFunctionStagingDirector _stagingDirector;
 
         /// <summary>A fixed lat/lng when <c>provideTestLocation</c> is set, else (null,null).</summary>
         private (double?, double?) CurrentLocation()
@@ -187,6 +189,14 @@ namespace SuperRealEstate.ARCore
             if (stagedSceneRenderer != null)
                 sceneActions.ConfigureStaging(stagedSceneRenderer);
 
+            // AI staging director: "stage this room, warm modern" — Claude plans,
+            // FitChecker validates, the staged-scene renderer shows it.
+            if (!string.IsNullOrEmpty(supabaseUrl) && stagedSceneRenderer != null)
+            {
+                _stagingDirector = new EdgeFunctionStagingDirector(supabaseUrl, supabaseAnonKey);
+                sceneActions.ConfigureDirector(_stagingDirector, Backend);
+            }
+
             if (!string.IsNullOrEmpty(supabaseUrl) && propertyOverlayRenderer != null)
             {
                 _propertyData = new EdgeFunctionPropertyData(supabaseUrl, supabaseAnonKey);
@@ -232,6 +242,7 @@ namespace SuperRealEstate.ARCore
             _propertyData?.SetAccessToken(token);
             _captureService?.SetAccessToken(token);
             _storageUploader?.SetAccessToken(token);
+            _stagingDirector?.SetAccessToken(token);
             // Attribute captured furniture to the signed-in user (storage/RLS).
             if (furnitureCaptureController != null && Sessions != null)
                 furnitureCaptureController.OwnerId = Sessions.UserId;

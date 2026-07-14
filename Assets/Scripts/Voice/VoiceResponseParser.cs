@@ -37,6 +37,7 @@ namespace SuperRealEstate.Voice
             "recognize_finish" => VoiceActionType.RecognizeFinish,
             "remove_wall" => VoiceActionType.RemoveWall,
             "stage_furniture" => VoiceActionType.StageFurniture,
+            "auto_stage" => VoiceActionType.AutoStage,
             "show_comps" => VoiceActionType.ShowComps,
             "none" or "" => VoiceActionType.None,
             _ => VoiceActionType.Unknown,

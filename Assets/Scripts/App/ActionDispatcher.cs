@@ -45,6 +45,7 @@ namespace SuperRealEstate.App
             VoiceActionType.RecognizeFinish => AppFeature.SurfaceFinishRecognition,
             VoiceActionType.RemoveWall => AppFeature.WallRemovalPortal,
             VoiceActionType.StageFurniture => AppFeature.VirtualStaging,
+            VoiceActionType.AutoStage => AppFeature.VirtualStaging,
             VoiceActionType.ShowComps => AppFeature.PropertyOverlays,
             _ => null,
         };
@@ -92,6 +93,7 @@ namespace SuperRealEstate.App
                 case VoiceActionType.RecognizeFinish: await _actions.RecognizeFinishAsync(ct); break;
                 case VoiceActionType.RemoveWall: await _actions.RemoveWallAsync(action.Target, ct); break;
                 case VoiceActionType.StageFurniture: await _actions.StageFurnitureAsync(action.Target, ct); break;
+                case VoiceActionType.AutoStage: await _actions.AutoStageAsync(action.Target, ct); break;
                 case VoiceActionType.ShowComps: await _actions.ShowCompsAsync(ct); break;
             }
             return new DispatchResult(true, feature, true, "available");

@@ -30,7 +30,7 @@ const MAX_TRANSCRIPT_CHARS = 4000;
 
 const ACTION_TYPES = [
   "none", "measure_room", "identify_plant", "estimate_material",
-  "recognize_finish", "remove_wall", "stage_furniture", "show_comps",
+  "recognize_finish", "remove_wall", "stage_furniture", "auto_stage", "show_comps",
 ] as const;
 
 const SCHEMA = {
@@ -63,7 +63,8 @@ Turn the user's spoken request into:
    - estimate_material: how much of a material (set "material": mulch|paint|flooring|sod|gravel|concrete|pavers|fence; put specifics like depth in "params").
    - recognize_finish: identify the finish on a surface ("what paint/floor is this").
    - remove_wall: virtually remove a wall (put a wall reference in "target" if given).
-   - stage_furniture: place furniture ("target" = the item, e.g. "sofa").
+   - stage_furniture: place ONE item ("target" = the item, e.g. "sofa").
+   - auto_stage: AI-stage the WHOLE room ("stage this room", "furnish this in mid-century style", "show them how their furniture fits in here"); put the style brief in "target" (e.g. "warm modern"), or "" for a neutral default.
    - show_comps: show neighborhood comparables.
    - none: pure conversation / answer, no app action.
 Pick the single best action; use "none" if it's just a question you can answer in the reply. Leave unused string fields as "". Keep replies under ~2 sentences. If a snapshot/measurements are provided, use them.`;

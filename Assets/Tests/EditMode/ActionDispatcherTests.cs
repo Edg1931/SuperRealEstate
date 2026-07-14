@@ -20,6 +20,7 @@ namespace SuperRealEstate.Tests
             public Task RecognizeFinishAsync(CancellationToken ct = default) { LastCall = "finish"; return Task.CompletedTask; }
             public Task RemoveWallAsync(string id, CancellationToken ct = default) { LastCall = "removewall"; LastWall = id; return Task.CompletedTask; }
             public Task StageFurnitureAsync(string item, CancellationToken ct = default) { LastCall = "stage"; return Task.CompletedTask; }
+            public Task AutoStageAsync(string style, CancellationToken ct = default) { LastCall = "autostage"; return Task.CompletedTask; }
             public Task ShowCompsAsync(CancellationToken ct = default) { LastCall = "comps"; return Task.CompletedTask; }
         }
 

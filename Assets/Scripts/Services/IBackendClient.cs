@@ -55,6 +55,12 @@ namespace SuperRealEstate.Services
         /// <summary>Fetch a vendor's importable catalog items (3D assets + price).</summary>
         Task<IReadOnlyList<CatalogItem>> GetVendorCatalogAsync(string vendorId, CancellationToken ct = default);
 
+        /// <summary>Browse catalog items across all vendors (for the staging director).</summary>
+        Task<IReadOnlyList<CatalogItem>> GetCatalogItemsAsync(int limit = 60, CancellationToken ct = default);
+
+        /// <summary>The signed-in user's own furniture library (captured pieces). RLS-scoped.</summary>
+        Task<IReadOnlyList<FurnitureAsset>> GetMyFurnitureAsync(int limit = 40, CancellationToken ct = default);
+
         Task<string> SaveRoomAsync(RoomRecord room, CancellationToken ct = default);
 
         Task SaveEstimateItemsAsync(

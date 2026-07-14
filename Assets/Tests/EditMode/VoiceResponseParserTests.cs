@@ -33,6 +33,7 @@ namespace SuperRealEstate.Tests
             Assert.AreEqual(VoiceActionType.MeasureRoom, VoiceResponseParser.ParseType("measure_room"));
             Assert.AreEqual(VoiceActionType.IdentifyPlant, VoiceResponseParser.ParseType("identify_plant"));
             Assert.AreEqual(VoiceActionType.ShowComps, VoiceResponseParser.ParseType("show_comps"));
+            Assert.AreEqual(VoiceActionType.AutoStage, VoiceResponseParser.ParseType("auto_stage"));
             Assert.AreEqual(VoiceActionType.None, VoiceResponseParser.ParseType("none"));
             Assert.AreEqual(VoiceActionType.None, VoiceResponseParser.ParseType(""));
             Assert.AreEqual(VoiceActionType.Unknown, VoiceResponseParser.ParseType("teleport"));

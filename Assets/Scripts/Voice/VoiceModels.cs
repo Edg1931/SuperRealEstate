@@ -15,6 +15,7 @@ namespace SuperRealEstate.Voice
         RecognizeFinish,
         RemoveWall,         // Target = wall id
         StageFurniture,     // Target = catalog item / "sofa"
+        AutoStage,          // Target = style brief ("warm modern") — AI stages the whole room
         ShowComps,
         Unknown
     }

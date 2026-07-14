@@ -67,9 +67,11 @@ namespace SuperRealEstate.ProjectsBackend
         public float plan_y;
         public float plan_yaw_deg;
 
-        // Optional explicit flag a writer can set to disambiguate a placement
-        // that legitimately sits at plan origin (0,0). When present it wins over
-        // the coordinate heuristic below.
+        // Explicit flag disambiguating a placement that legitimately sits at
+        // plan origin (0,0). `has_plan` is the DB column (migration 0014);
+        // `hasPlan` is the older in-memory/JSON spelling. Either wins over the
+        // coordinate heuristic below.
+        public bool has_plan;
         public bool hasPlan;
     }
 
@@ -199,7 +201,7 @@ namespace SuperRealEstate.ProjectsBackend
         }
 
         private static bool HasPlanCoords(StagingPlacementRow row)
-            => row.hasPlan || row.plan_x != 0f || row.plan_y != 0f;
+            => row.has_plan || row.hasPlan || row.plan_x != 0f || row.plan_y != 0f;
 
         // A 0 scale almost always means the column was absent in the JSON; treat
         // it as the default 1 so placements aren't rendered collapsed.
